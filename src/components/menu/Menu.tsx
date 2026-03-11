@@ -264,7 +264,7 @@ export default function Menu({ onLoadingChange, onFeaturedCheck }: Props) {
             transition={{ duration: 1.5, delay: 0.3, ease: "easeOut" }}
             className="text-3xl md:text-4xl font-extrabold tracking-widest text-[#FCD451]/90"
           >
-            مطعم الشيف عماد
+            الشيف عماد
           </motion.h2>
 
           <motion.div

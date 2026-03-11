@@ -59,17 +59,11 @@ export default function CategorySection({ category, items, orderSystem }: Props)
       {/* ===== Items ===== */}
       <div className="flex flex-col gap-2 w-full max-w-full mx-auto">
         {items.map((item) => (
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}           // يبدأ من اليمين
-            whileInView={{ opacity: 1, x: 0 }}       // يتحرك لمكانه الطبيعي
-            transition={{ duration: 2, type: "keyframes", stiffness: 120, damping: 12 }} // حركة ديناميكية وناعمة
-            viewport={{ once: true }}
-          >
-            <ItemRow
-              item={item}
-              orderSystem={orderSystem}
-            />
-          </motion.div>
+
+          <ItemRow
+            item={item}
+            orderSystem={orderSystem}
+          />
         ))}
       </div>
 
