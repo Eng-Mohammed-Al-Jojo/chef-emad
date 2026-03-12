@@ -37,46 +37,37 @@ export default function ItemRow({ item }: Props) {
     gap-4 md:gap-8
   "
       >
-        {/* Left side (Name + Description) */}
-        <div className="flex flex-col gap-1.5 flex-1 text-left">
+        {/* Right side (Name + Description) */}
+        <div className="flex flex-col gap-1.5 flex-1 text-right">
 
-          <div className="flex items-center gap-2">
+          <h3
+            className={`
+      text-md md:text-xl
+      font-bold tracking-tight
+      ${unavailable
+                ? "text-white/40"
+                : "text-white group-hover:text-gold transition-colors duration-300"}
+    `}
+          >
+            {item.name}
+          </h3>
 
-
-            <h3
-              className={`
-          text-md md:text-xl
-          font-bold tracking-tight
-          ${unavailable
-                  ? "text-white/40"
-                  : "text-white group-hover:text-gold transition-colors duration-300"}
-        `}
-            >
-              {item.name}
-
-            </h3>
-            {/* {item.star && !unavailable && (
-              <span className="text-gold text-xs bg-gold/10 px-2 py-0.5 rounded-full border border-gold/20 font-bold">
-                ⭐
-              </span>
-            )} */}
-          </div>
-
+          {/* المكونات تحت الاسم مباشرة */}
           {hasIngredients && (
             <p
               className={`
-          text-sm md:text-base font-light leading-relaxed
-          ${unavailable
+        text-sm md:text-base font-light leading-relaxed
+        ${unavailable
                   ? "text-white/20"
                   : "text-white/50 group-hover:text-white/70 transition-colors duration-300"}
-        `}
+      `}
             >
               {item.ingredients}
             </p>
           )}
         </div>
 
-        {/* Right side (Price) */}
+        {/* Left side (Price) */}
         <div className="flex items-center shrink-0">
           <div
             className={`
