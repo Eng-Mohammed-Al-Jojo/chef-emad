@@ -22,7 +22,7 @@ export default function CategorySection({ category, items, orderSystem }: Props)
         >
           <div className="flex items-center gap-3">
             <div className="w-1.5 h-8 bg-gold rounded-full gold-glow" />
-            <h2 className="text-3xl md:text-4xl font-black text-white tracking-tight">
+            <h2 className="text-2xl md:text-4xl font-black text-white tracking-tight">
               {category.name}
             </h2>
           </div>
