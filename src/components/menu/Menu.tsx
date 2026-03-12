@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { db } from "../../firebase";
 import { ref, onValue } from "firebase/database";
 import CategorySection from "./CategorySection";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 /* ================= Types ================= */
 export interface Category {
@@ -231,138 +231,162 @@ export default function Menu({ onLoadingChange, onFeaturedCheck }: Props) {
   /* ========= Loading UI ========= */
   if (loading) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#040309]">
-        {/* Overlay blur + gradient */}
-        <div className="absolute inset-0 bg-black/50 backdrop-blur-xl" />
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-luxury-black">
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gold/10 blur-[150px] rounded-full" />
+        </div>
 
-        {/* Main Card */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1.2, ease: "easeOut" }}
-          className="relative z-10 flex flex-col items-center px-12 py-14 rounded-[3rem] bg-[#0f0f0f]/90 border border-[#FCD451]/20 shadow-[0_0_100px_rgba(252,212,81,0.25)]"
+          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+          className="relative z-10 flex flex-col items-center px-8 md:px-12 py-12 md:py-16 rounded-[2.5rem] bg-luxury-black/60 backdrop-blur-3xl border border-white/5 shadow-2xl"
         >
-          {/* Glow behind logo */}
-
-          {/* Logo floating */}
           <motion.div
-            className="relative w-48 h-48 mb-10"
-            animate={{ y: [0, -15, 0] }}
-            transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+            className="relative w-32 h-32 md:w-40 md:h-40 mb-8"
+            animate={{ y: [0, -10, 0] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
           >
+            <div className="absolute inset-0 bg-gold/20 blur-2xl rounded-full" />
             <img
               src="/logo.png"
               alt="Logo"
-              className="w-full h-full object-contain rounded-full shadow-2xl"
+              className="relative w-full h-full object-contain rounded-full border-2 border-gold/20"
             />
           </motion.div>
 
-          {/* Title */}
           <motion.h2
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1.5, delay: 0.3, ease: "easeOut" }}
-            className="text-3xl md:text-4xl font-extrabold tracking-widest text-[#FCD451]/90"
+            transition={{ duration: 1, delay: 0.2 }}
+            className="text-3xl md:text-5xl font-black tracking-tight text-white mb-2"
           >
             الشيف عماد
           </motion.h2>
 
-          <motion.div
-            className="w-24 h-[2px] bg-linear-to-r from-[#FCD451]/80 to-[#E5CB60]/80 rounded-full my-5"
-            initial={{ scaleX: 0 }}
-            animate={{ scaleX: 1 }}
-            transition={{ duration: 1, delay: 0.5, ease: "easeOut" }}
-          />
-
           <motion.p
-            className="text-[#FCD451]/80 text-lg font-[Cairo] text-center mb-6"
             initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1.5, delay: 0.7, ease: "easeOut" }}
+            animate={{ opacity: 0.6 }}
+            transition={{ duration: 1, delay: 0.4 }}
+            className="text-lg font-light tracking-widest uppercase text-gold/80 mb-8"
           >
             ذكريات لا تنسى
           </motion.p>
 
-          {/* Dots Loading */}
-          <div className="flex gap-2 mt-2">
+          <div className="flex gap-1.5 h-1">
             {[0, 1, 2].map((i) => (
               <motion.div
                 key={i}
-                className="w-3 h-3 bg-[#FCD451] rounded-full"
-                animate={{ y: [0, -10, 0] }}
-                transition={{ duration: 0.8, delay: i * 0.2, repeat: Infinity, ease: "easeInOut" }}
-              />
+                className="w-8 h-full bg-gold/20 rounded-full relative overflow-hidden"
+              >
+                <motion.div
+                  className="absolute inset-0 bg-gold"
+                  animate={{ left: ["-100%", "100%"] }}
+                  transition={{ duration: 1.5, delay: i * 0.2, repeat: Infinity, ease: "easeInOut" }}
+                />
+              </motion.div>
             ))}
           </div>
         </motion.div>
       </div>
     );
   }
+
   if (!hasAnyCategories || !hasAnyItems) {
     return (
       <div className="flex flex-col items-center justify-center text-center py-32 px-6">
-        <h2 className="text-2xl md:text-3xl font-bold text-[#E5CB60] mb-3">
+        <h2 className="text-3xl md:text-4xl font-black text-white mb-4">
           لا يوجد أصناف حالياً
         </h2>
-        <p className="text-[#E5CB60] text-lg">
+        <p className="text-gold/60 text-lg md:text-xl font-light">
           جاري العمل على تجهيز المنيو قريباً
         </p>
-        <div className="w-24 h-[2px] bg-[#E5CB60]/40 rounded-full mt-6" />
+        <div className="w-20 h-1 bg-gold/20 rounded-full mt-8" />
       </div>
     );
   }
 
   /* ================= Render ================= */
   return (
-    <main className="max-w-4xl mx-auto px-0 pb-10 font-[Cairo] font-light text-[#F5F8F7]">
+    <main className="max-w-4xl mx-auto px-4 pb-20 pt-8 md:pt-12 min-h-screen">
       {toast && (
-        <div
-          className={`fixed top-6 right-6 px-4 py-3 rounded-2xl font-bold shadow-2xl z-50 text-white
-          ${toast.color === "green" ? "bg-[#E5CB60]" : "bg-[#E5CB60]"}`}
-        >
-          {toast.message}
-        </div>
+        <AnimatePresence>
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className={`fixed top-8 left-1/2 -translate-x-1/2 px-6 py-3 rounded-2xl font-bold shadow-2xl z-50 text-luxury-black
+            ${toast.color === "green" ? "bg-gold" : "bg-gold/90"}`}
+          >
+            {toast.message}
+          </motion.div>
+        </AnimatePresence>
       )}
 
       {/* ===== Tabs الأقسام ===== */}
-      <div className="flex flex-wrap gap-3 justify-center top-2 z-30">
-        <button
-          onClick={() => setActiveCatId("all")}
-          className={`px-4 py-2 rounded-full font-bold transition-all duration-200 font-[Cairo] ${activeCatId === "all"
-            ? "bg-[#FCD451] text-black shadow-lg scale-105 text-sm md:text-md"
-            : "bg-white/95 backdrop-blur text-black hover:bg-white/80 shadow text-xs md:text-md"
-            }`}
-        >
-          جميع الأصناف
-        </button>
-
-        {availableCategoriesWithItems.map((cat) => (
+      <nav className="sticky top-6 z-40 mb-8 md:mb-12">
+        <div className="flex items-center justify-start overflow-x-auto gap-2 p-1.5 bg-luxury-black/60 backdrop-blur-xl border border-white/5 rounded-3xl scrollbar-hide">
           <button
-            key={cat.id}
-            onClick={() => setActiveCatId(cat.id)}
-            className={`px-4 py-2 rounded-full font-bold transition-all duration-200 font-[Cairo] ${activeCatId === cat.id
-              ? "bg-[#FCD451] text-black shadow-lg scale-105 text-sm md:text-md"
-              : "bg-white/95 backdrop-blur text-black hover:bg-white/80 shadow text-xs md:text-md"
-              }`}
+            onClick={() => setActiveCatId("all")}
+            className={`
+              relative px-5 py-2.5 rounded-2xl md:px-6 md:py-3 text-sm md:text-base font-bold whitespace-nowrap transition-all duration-300
+              ${activeCatId === "all" ? "text-luxury-black" : "text-white/60 hover:text-white hover:bg-white/5"}
+            `}
           >
-            {cat.name}
+            {activeCatId === "all" && (
+              <motion.div
+                layoutId="activeTab"
+                className="absolute inset-0 bg-gold rounded-2xl -z-10"
+                transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+              />
+            )}
+            جميع الأصناف
           </button>
-        ))}
-      </div>
+
+          {availableCategoriesWithItems.map((cat) => (
+            <button
+              key={cat.id}
+              onClick={() => setActiveCatId(cat.id)}
+              className={`
+                relative px-5 py-2.5 rounded-2xl md:px-6 md:py-3 text-sm md:text-base font-bold whitespace-nowrap transition-all duration-300
+                ${activeCatId === cat.id ? "text-luxury-black" : "text-white/60 hover:text-white hover:bg-white/5"}
+              `}
+            >
+              {activeCatId === cat.id && (
+                <motion.div
+                  layoutId="activeTab"
+                  className="absolute inset-0 bg-gold rounded-2xl -z-10"
+                  transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                />
+              )}
+              {cat.name}
+            </button>
+          ))}
+        </div>
+      </nav>
 
       {/* ===== محتوى القسم / عرض الكل ===== */}
-      <div className="min-h-screen">
-        {activeCatId === "all"
-          ? availableCategoriesWithItems.map((cat) => {
-            const catItems = items.filter(i => i.categoryId === cat.id && i.visible !== false);
-            return <CategorySection key={cat.id} category={cat} items={catItems} orderSystem={orderSystem} />;
-          })
-          : availableCategoriesWithItems.map((cat) => {
-            if (cat.id !== activeCatId) return null;
-            const catItems = items.filter(i => i.categoryId === cat.id && i.visible !== false);
-            return <CategorySection key={cat.id} category={cat} items={catItems} orderSystem={orderSystem} />;
-          })}
-      </div>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeCatId}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+          className="min-h-[50vh]"
+        >
+          {activeCatId === "all"
+            ? availableCategoriesWithItems.map((cat) => {
+              const catItems = items.filter(i => i.categoryId === cat.id && i.visible !== false);
+              return <CategorySection key={cat.id} category={cat} items={catItems} orderSystem={orderSystem} />;
+            })
+            : availableCategoriesWithItems.map((cat) => {
+              if (cat.id !== activeCatId) return null;
+              const catItems = items.filter(i => i.categoryId === cat.id && i.visible !== false);
+              return <CategorySection key={cat.id} category={cat} items={catItems} orderSystem={orderSystem} />;
+            })}
+        </motion.div>
+      </AnimatePresence>
     </main>
   );
 }

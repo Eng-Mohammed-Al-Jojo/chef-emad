@@ -1,4 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { FiChevronDown, FiCheck } from "react-icons/fi";
 
 interface Props {
     options: { id: string; name: string }[];
@@ -12,7 +14,6 @@ const CustomSelect: React.FC<Props> = ({ options, value, onChange, error, placeh
     const [open, setOpen] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
 
-    // لإغلاق القائمة إذا ضغطت برا
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
             if (ref.current && !ref.current.contains(e.target as Node)) {
@@ -27,43 +28,69 @@ const CustomSelect: React.FC<Props> = ({ options, value, onChange, error, placeh
 
     return (
         <div className="relative w-full" ref={ref} dir="rtl">
-            {/* الزر الأساسي */}
+
+            {/* الزر */}
             <button
                 type="button"
                 onClick={() => setOpen(!open)}
                 className={`
-      w-full flex flex-row justify-between items-center px-3 py-2 border 
-      ${error ? "border-red-500" : "border-gray-300"} 
-      rounded-md focus:outline-none focus:ring-2 focus:ring-[#FCD451] 
-      bg-white 
-      transition-all duration-200
-    `}
+                    w-full flex flex-row justify-between items-center px-4 py-2.5 border rounded-xl text-sm
+                    ${error ? "border-red-500/50 bg-red-500/5 text-red-400" : "border-white/10 bg-white/5 text-white"} 
+                    outline-none hover:border-gold/30 transition-all duration-300 group
+                `}
             >
-                <span>{selectedOption ? selectedOption.name : placeholder || "اختر"}</span>
-                <span className={`transition-transform ${open ? "rotate-180" : ""}`}>▼</span>
+                <span className="font-semibold">
+                    {selectedOption ? selectedOption.name : placeholder || "اختر"}
+                </span>
+
+                <motion.span
+                    animate={{ rotate: open ? 180 : 0 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                    className="text-white/30 group-hover:text-gold transition-colors"
+                >
+                    <FiChevronDown size={16} />
+                </motion.span>
             </button>
 
-            {/* القائمة مع حركة */}
-            <div
-                className={`
-      absolute z-50 w-full right-0 mt-1 max-h-60 overflow-auto border border-gray-300 rounded-md bg-white shadow-lg
-      transform origin-top transition-all duration-200
-      ${open ? "opacity-100 scale-100" : "opacity-0 scale-95 pointer-events-none"}
-    `}
-            >
-                {options.map(o => (
-                    <button
-                        key={o.id}
-                        type="button"
-                        onClick={() => { onChange(o.id); setOpen(false); }}
-                        className={`w-full text-right px-3 py-2 hover:bg-[#FCD451]/20 transition ${value === o.id ? "bg-[#FCD451]/30 font-bold" : ""}`}
+            {/* القائمة */}
+            <AnimatePresence>
+                {open && (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.96, y: -8 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.96, y: -8 }}
+                        className="
+                            absolute z-50 w-full right-0 mt-2 
+                            border border-white/10 
+                            rounded-xl 
+                            bg-luxury-black/95 backdrop-blur-md
+                            shadow-2xl overflow-hidden py-1
+                        "
                     >
-                        {o.name}
-                    </button>
-                ))}
-            </div>
-        </div>
+                        <div className="max-h-52 overflow-y-auto scrollbar-none">
 
+                            {options.map(o => (
+                                <button
+                                    key={o.id}
+                                    type="button"
+                                    onClick={() => { onChange(o.id); setOpen(false); }}
+                                    className={`
+                                        w-full text-right px-4 py-2.5 text-sm flex items-center justify-between transition-all duration-200
+                                        ${value === o.id
+                                            ? "bg-gold text-luxury-black font-bold"
+                                            : "text-white/70 hover:bg-white/5 hover:text-white"}
+                                    `}
+                                >
+                                    <span>{o.name}</span>
+                                    {value === o.id && <FiCheck size={14} />}
+                                </button>
+                            ))}
+
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
     );
 };
 

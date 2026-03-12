@@ -4,7 +4,15 @@
 @import "swiper/css/navigation";
 @import "swiper/css/pagination";
 
+@theme {
+  --color-gold: #FCD451;
+  --color-gold-dark: #E5CB60;
+  --color-luxury-black: #040309;
+  --color-card-bg: #0f0f0f;
 
+  --shadow-premium: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05), 0 0 40px rgba(252, 212, 81, 0.05);
+  --shadow-gold-glow: 0 0 30px rgba(252, 212, 81, 0.2);
+}
 
 @font-face {
   font-family: 'Playpen Sans Arabic';
@@ -12,7 +20,6 @@
   font-weight: 400;
   font-style: normal;
 }
-
 
 @font-face {
   font-family: 'Lemonada';
@@ -22,63 +29,12 @@
 }
 
 @font-face {
-  font-family: 'BalooBhaijaan2-Bold';
-  src: url('/fonts/BalooBhaijaan2-Bold.ttf') format('truetype');
-  font-weight: 70;
-  font-style: extra-bold;
-}
-
-
-
-/* Cairo Thin */
-@font-face {
   font-family: 'Cairo';
-  src: url('/fonts/Cairo-Thin.ttf') format('truetype');
-  font-weight: 200;
+  src: url('/fonts/Cairo-ExtraBold.ttf') format('truetype');
+  font-weight: 800;
   font-style: normal;
 }
 
-/* Cairo ExtraLight */
-@font-face {
-  font-family: 'Cairo';
-  src: url('/fonts/Cairo-ExtraLight.ttf') format('truetype');
-  font-weight: 300;
-  font-style: normal;
-}
-
-/* Cairo Light */
-@font-face {
-  font-family: 'Cairo';
-  src: url('/fonts/Cairo-Light.ttf') format('truetype');
-  font-weight: 300;
-  font-style: normal;
-}
-
-/* Cairo Regular */
-@font-face {
-  font-family: 'Cairo';
-  src: url('/fonts/Cairo-Regular.ttf') format('truetype');
-  font-weight: 400;
-  font-style: normal;
-}
-
-/* Cairo Medium */
-@font-face {
-  font-family: 'Cairo';
-  src: url('/fonts/Cairo-Medium.ttf') format('truetype');
-  font-weight: 500;
-  font-style: normal;
-}
-
-/* Cairo SemiBold */
-@font-face {
-  font-family: 'Cairo';
-  src: url('/fonts/Cairo-SemiBold.ttf') format('truetype');
-  font-weight: 600;
-  font-style: normal;
-}
-
-/* Cairo Bold */
 @font-face {
   font-family: 'Cairo';
   src: url('/fonts/Cairo-Bold.ttf') format('truetype');
@@ -86,319 +42,112 @@
   font-style: normal;
 }
 
-/* Cairo ExtraBold */
 @font-face {
   font-family: 'Cairo';
-  src: url('/fonts/Cairo-ExtraBold.ttf') format('truetype');
-  font-weight: 800;
+  src: url('/fonts/Cairo-SemiBold.ttf') format('truetype');
+  font-weight: 600;
   font-style: normal;
 }
 
-/* Amiri Light */
 @font-face {
-  font-family: 'Almarai';
-  src: url('/fonts/Almarai-Light.ttf') format('truetype');
-  font-weight: 300;
+  font-family: 'Cairo';
+  src: url('/fonts/Cairo-Medium.ttf') format('truetype');
+  font-weight: 500;
   font-style: normal;
 }
 
-/* Amiri Regular */
 @font-face {
-  font-family: 'Almarai';
-  src: url('/fonts/Almarai-Regular.ttf') format('truetype');
+  font-family: 'Cairo';
+  src: url('/fonts/Cairo-Regular.ttf') format('truetype');
   font-weight: 400;
   font-style: normal;
 }
 
-/* Amiri Bold */
 @font-face {
-  font-family: 'Almarai';
-  src: url('/fonts/Almarai-Bold.ttf') format('truetype');
-  font-weight: 700;
+  font-family: 'Cairo';
+  src: url('/fonts/Cairo-Light.ttf') format('truetype');
+  font-weight: 300;
   font-style: normal;
 }
 
-/* Amiri Extra Bold */
-@font-face {
-  font-family: 'Almarai';
-  src: url('/fonts/Almarai-ExtraBold.ttf') format('truetype');
-  font-weight: 900;
-  font-style: normal;
+@layer base {
+  body {
+    @apply bg-luxury-black text-white antialiased selection:bg-gold/30;
+    font-family: 'Cairo', sans-serif;
+  }
 }
 
+@layer components {
+  .glass-morphic {
+    @apply backdrop-blur-xl bg-white/5 border border-white/10;
+  }
 
+  .premium-shadow {
+    @apply shadow-premium;
+  }
+
+  .gold-glow {
+    @apply shadow-gold-glow;
+  }
+
+  .gold-text-gradient {
+    @apply bg-clip-text text-transparent bg-linear-to-r from-gold via-gold-dark to-gold;
+  }
+}
+
+/* Base Body Style */
 body {
-  font-family: 'Playpen Sans Arabic', sans-serif;
+  font-family: 'Cairo', 'Playpen Sans Arabic', sans-serif;
 }
 
-
-@keyframes pulseScale {
+/* Animations */
+@keyframes float {
 
   0%,
   100% {
-    transform: scale(1);
-  }
-
-  50% {
-    transform: scale(1.08);
-  }
-}
-
-.animate-pulseScale {
-  animation: pulseScale 2s ease-in-out infinite;
-}
-
-@keyframes textGradient {
-  0% {
-    background-position: 0% 50%;
-  }
-
-  50% {
-    background-position: 100% 50%;
-  }
-
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
-.animate-textGradient {
-  background-size: 200% 200%;
-  animation: textGradient 3s ease infinite;
-}
-
-@keyframes fadeIn {
-  0% {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-
-  100% {
-    opacity: 1;
     transform: translateY(0);
-  }
-}
-
-.animate-fadeIn {
-  animation: fadeIn 1.5s ease forwards;
-}
-
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translate(-50%, 20px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translate(-50%, 0);
-  }
-}
-
-.animate-slideUp {
-  animation: slideUp 0.25s ease-out;
-}
-
-@keyframes floatSlow {
-  0% {
-    transform: translateY(0px);
   }
 
   50% {
     transform: translateY(-10px);
   }
-
-  100% {
-    transform: translateY(0px);
-  }
 }
 
-.animate-floatSlow {
-  animation: floatSlow 4s ease-in-out infinite;
+.animate-premium-float {
+  animation: float 4s ease-in-out infinite;
 }
 
-/* أنيميشن Toast */
-@keyframes toast-show {
+@keyframes shimmer {
   0% {
-    opacity: 0;
-    transform: translate(-50%, -150%) scale(0.9);
-  }
-
-  10% {
-    opacity: 1;
-    transform: translate(-50%, -100%) scale(1.05);
-  }
-
-  80% {
-    opacity: 1;
-    transform: translate(-50%, -100%) scale(1);
+    background-position: -200% 0;
   }
 
   100% {
-    opacity: 0;
-    transform: translate(-50%, -150%) scale(0.95);
+    background-position: 200% 0;
   }
 }
 
-/* class لإستدعاء الانيميشن */
-.animate-toast-show {
-  animation: toast-show 1s ease-in-out forwards;
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent, rgba(252, 212, 81, 0.1), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 2.5s infinite;
 }
 
-
-/* مخصص للitemRow animations*/
-
-@keyframes itemEnter {
-  from {
-    opacity: 0;
-    transform: translateY(12px) scale(0.97);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
 }
 
-@keyframes imagePop {
-  from {
-    transform: scale(0.9);
-    opacity: 0;
-  }
-
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
+::-webkit-scrollbar-track {
+  @apply bg-luxury-black;
 }
 
-@keyframes toastShow {
-  from {
-    opacity: 0;
-    transform: translate(-50%, -40px) scale(0.9);
-  }
-
-  to {
-    opacity: 1;
-    transform: translate(-50%, -70px) scale(1);
-  }
+::-webkit-scrollbar-thumb {
+  @apply bg-gold/20 rounded-full hover:bg-gold/40 transition-colors;
 }
 
-.animate-item-enter {
-  animation: itemEnter 0.45s ease-out both;
-}
-
-.animate-image-pop {
-  animation: imagePop 0.4s ease-out both;
-}
-
-.animate-toast-show {
-  animation: toastShow 0.3s ease-out both;
-}
-
-
-
-@keyframes loaderFade {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes logoFloat {
-
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-
-  50% {
-    transform: translateY(-8px);
-  }
-}
-
-@keyframes haloPulse {
-
-  0%,
-  100% {
-    opacity: 0.4;
-    transform: scale(1);
-  }
-
-  50% {
-    opacity: 0.7;
-    transform: scale(1.15);
-  }
-}
-
-@keyframes bgPulse {
-
-  0%,
-  100% {
-    opacity: 0.25;
-  }
-
-  50% {
-    opacity: 0.45;
-  }
-}
-
-@keyframes dot {
-  0% {
-    opacity: 0.3;
-    transform: scale(0.8);
-  }
-
-  50% {
-    opacity: 1;
-    transform: scale(1.1);
-  }
-
-  100% {
-    opacity: 0.3;
-    transform: scale(0.8);
-  }
-}
-
-.animate-loader-fade {
-  animation: loaderFade 0.4s ease-out both;
-}
-
-.animate-logo-float {
-  animation: logoFloat 2.8s ease-in-out infinite;
-}
-
-.animate-halo {
-  animation: haloPulse 3s ease-in-out infinite;
-}
-
-.animate-bg-pulse {
-  animation: bgPulse 4s ease-in-out infinite;
-}
-
-
-
-
-@keyframes logo-float {
-  0% {
-    transform: translateY(0) scale(1);
-  }
-
-  50% {
-    transform: translateY(-6px) scale(1.02);
-  }
-
-  100% {
-    transform: translateY(0) scale(1);
-  }
-}
-
-.animate-logo-float {
-  animation: logo-float 3s ease-in-out infinite;
+/* Tap Highlight removal */
+* {
+  -webkit-tap-highlight-color: transparent;
 }

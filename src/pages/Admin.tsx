@@ -19,7 +19,9 @@ import ItemSection from "../components/admin/ItemSection";
 import Popup from "../components/admin/Popup";
 import { type PopupState } from "../components/admin/types";
 import OrderSettingsModal from "../components/admin/OrderSettingsModal";
+import PdfExport from "../components/admin/PdfExport";
 import { FaDatabase } from "react-icons/fa";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function Admin() {
   const [authOk, setAuthOk] = useState(false);
@@ -431,97 +433,137 @@ export default function Admin() {
   // ================= LOGIN UI =================
   if (!authOk) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#040309]" dir="rtl">
-        {toast && (
-          <div className="fixed top-5 left-1/2 transform -translate-x-1/2 z-50 bg-[#FCD451] text-black px-6 py-3 rounded-xl shadow-lg transition-all">
-            {toast}
-          </div>
-        )}
+      <div className="min-h-screen flex items-center justify-center bg-luxury-black font-[Cairo] relative overflow-hidden" dir="rtl">
+        {/* Background Accents */}
+        <div className="fixed inset-0 pointer-events-none">
+          <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-gold/5 blur-[120px] rounded-full" />
+          <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-gold/5 blur-[120px] rounded-full" />
+        </div>
+
+        <AnimatePresence>
+          {toast && (
+            <motion.div 
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="fixed top-6 left-1/2 -translate-x-1/2 z-100 bg-gold text-luxury-black px-6 py-3 rounded-xl shadow-premium font-black text-xs uppercase tracking-widest"
+            >
+              {toast}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* POPUP إعادة تعيين كلمة المرور */}
         {resetPasswordPopup && (
-          <div className="fixed inset-0 bg-[#040309] flex justify-center items-center z-50 ">
-            <div className="bg-white rounded-3xl shadow-2xl p-6 w-full max-w-sm border-4 border-[#FCD451]">
-              {/* الشعار */}
-              <div className="flex justify-center mb-4">
-                <img src="/logo.png" alt="Logo" className="w-24 h-24 object-contain" />
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="fixed inset-0 bg-luxury-black/90 backdrop-blur-xl flex justify-center items-center z-50 p-4"
+          >
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="glass-morphic rounded-3xl p-6 w-full max-w-md border border-white/10 relative overflow-hidden"
+            >
+              <div className="absolute inset-0 bg-linear-to-br from-gold/10 via-transparent to-transparent pointer-events-none" />
+              
+              <div className="relative z-10">
+                <div className="flex justify-center mb-8">
+                  <img src="/logo.png" alt="Logo" className="w-16 h-16 object-contain animate-premium-float" />
+                </div>
+                <h2 className="text-xl font-black mb-4 text-white text-center">
+                  إعادة تعيين كلمة المرور
+                </h2>
+                <div className="space-y-4">
+                  <input
+                    type="email"
+                    placeholder="أدخل بريدك الإلكتروني"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm text-white outline-none focus:border-gold/50 transition-colors"
+                    value={resetEmail}
+                    onChange={(e) => setResetEmail(e.target.value)}
+                  />
+                  {resetMessage && (
+                    <p className="text-sm text-center text-green-400 font-bold">{resetMessage}</p>
+                  )}
+                  <div className="flex flex-col gap-3 pt-4">
+                    <button
+                      onClick={handleResetPassword}
+                      className="w-full bg-gold text-luxury-black font-black py-3 rounded-xl hover:bg-gold/90 transition shadow-lg shadow-gold/20 text-sm"
+                    >
+                      إرسال الرابط
+                    </button>
+                    <button
+                      onClick={() => {
+                        setResetPasswordPopup(false);
+                        setResetMessage("");
+                      }}
+                      className="w-full bg-white/5 text-white font-bold py-3 rounded-xl border border-white/10 hover:bg-white/10 transition text-sm"
+                    >
+                      إلغاء
+                    </button>
+                  </div>
+                </div>
               </div>
-              <h2 className="text-xl font-bold mb-4 text-[#FCD451] text-center">
-                إعادة تعيين كلمة المرور
-              </h2>
-              <input
-                type="email"
-                placeholder="أدخل بريدك الإلكتروني"
-                className="w-full p-3 border rounded-xl mb-3"
-                value={resetEmail}
-                onChange={(e) => setResetEmail(e.target.value)}
-              />
-              {resetMessage && (
-                <p className="text-sm text-center text-green-600 mb-2">{resetMessage}</p>
-              )}
-              <div className="flex justify-end gap-2">
-                <button
-                  onClick={handleResetPassword}
-                  className="bg-[#FCD451] text-black px-4 py-2 rounded-xl hover:bg-[#FCD451]/80 transition"
-                >
-                  إرسال الرابط
-                </button>
-                <button
-                  onClick={() => {
-                    setResetPasswordPopup(false);
-                    setResetMessage("");
-                  }}
-                  className="px-4 py-2 rounded-xl border hover:bg-gray-100 transition"
-                >
-                  إلغاء
-                </button>
-              </div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         )}
 
-        {/* POPUP تسجيل الدخول */}
+        {/* LOGIN FORM */}
         {!resetPasswordPopup && (
-          <div
-            className="bg-white p-6 rounded-3xl w-full max-w-xs border-4 flex flex-col items-center"
-            style={{ borderColor: "#FCD451" }}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="glass-morphic p-8 md:p-10 rounded-3xl w-full max-w-sm border border-white/10 relative overflow-hidden mx-4"
           >
-            {toast && (
-              <div className="fixed top-5 left-1/2 transform -translate-x-1/2 z-50 bg-[#FCD451] text-black px-6 py-3 rounded-xl shadow-lg transition-all">
-                {toast}
+            <div className="absolute inset-0 bg-linear-to-br from-gold/5 via-transparent to-transparent pointer-events-none" />
+            
+            <div className="relative z-10 flex flex-col items-center">
+              <div className="mb-6 relative">
+                <div className="absolute inset-0 bg-gold/20 blur-2xl rounded-full animate-pulse" />
+                <img src="/logo.png" alt="Logo" className="relative w-20 h-20 object-contain" />
               </div>
-            )}
-            {/* الشعار */}
-            <div className="mb-4">
-              <img src="/logo.png" alt="Logo" className="w-24 h-24 object-contain" />
+              
+              <div className="text-center mb-10">
+                <h1 className="text-2xl font-black text-white mb-2">دخول الأدمن</h1>
+                <p className="text-white/40 text-[9px] font-bold uppercase tracking-[0.3em]">Chef Emad Administration</p>
+              </div>
+
+              <div className="w-full space-y-4">
+                <div className="group">
+                  <input
+                    type="email"
+                     className="w-full bg-white/5 border border-white/10 rounded-xl p-3.5 text-sm text-white outline-none focus:border-gold/50 transition-all group-hover:border-white/20"
+                    placeholder="البريد الإلكتروني"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </div>
+                <div className="group">
+                  <input
+                    type="password"
+                     className="w-full bg-white/5 border border-white/10 rounded-xl p-3.5 text-sm text-white outline-none focus:border-gold/50 transition-all group-hover:border-white/20"
+                    placeholder="كلمة المرور"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                </div>
+                
+                <button
+                  onClick={login}
+                  className="w-full py-4 rounded-xl font-black bg-gold text-luxury-black hover:bg-gold/90 transition-all shadow-xl shadow-gold/20 mt-4 text-xs uppercase tracking-widest active:scale-[0.98]"
+                >
+                  تسجيل الدخول
+                </button>
+                
+                <button
+                  onClick={() => setResetPasswordPopup(true)}
+                  className="w-full mt-4 text-xs text-white/40 hover:text-gold transition-colors font-bold uppercase tracking-widest"
+                >
+                  نسيت كلمة المرور؟
+                </button>
+              </div>
             </div>
-            <h1 className="text-xl font-bold mb-4 text-center text-[#FCD451]">دخول الأدمن</h1>
-            <input
-              type="email"
-              className="w-full p-3 border rounded-xl mb-3"
-              placeholder="اسم المستخدم (Email)"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-            <input
-              type="password"
-              className="w-full p-3 border rounded-xl mb-4"
-              placeholder="كلمة المرور"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            <button
-              onClick={login}
-              className="w-full py-3 rounded-xl font-bold bg-[#FCD451] text-black hover:cursor-pointer hover:bg-[#FCD451]/80"
-            >
-              دخول
-            </button>
-            <button
-              onClick={() => setResetPasswordPopup(true)}
-              className="mt-3 text-sm text-red-600 hover:underline hover:cursor-pointer"
-            >
-              نسيت كلمة المرور؟
-            </button>
-          </div>
+          </motion.div>
         )}
       </div>
     );
@@ -530,16 +572,35 @@ export default function Admin() {
 
   // ================= ADMIN PANEL =================
   return (
-    <div className="min-h-screen w-full bg-[#040309] flex justify-center py-5 md:p-6" dir="rtl">
-      {toast && (
-        <div className="fixed top-5 left-1/2 transform -translate-x-1/2 z-50 bg-[#FCD451] text-black px-6 py-3 rounded-xl shadow-lg transition-all">
-          {toast}
-        </div>
-      )}
+    <div className="min-h-screen w-full bg-luxury-black font-[Cairo] relative overflow-x-hidden" dir="rtl">
+      {/* Background Decor */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-gold/5 blur-[120px] rounded-full" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] bg-gold/5 blur-[120px] rounded-full" />
+      </div>
+
+      <AnimatePresence>
+        {toast && (
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="fixed top-8 left-1/2 -translate-x-1/2 z-100 bg-gold text-luxury-black px-8 py-4 rounded-2xl shadow-premium font-black text-sm uppercase tracking-widest"
+          >
+            {toast}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {loading && (
-        <div className="fixed inset-0 bg-black/30 flex justify-center items-center z-40">
-          <div className="bg-white p-6 rounded-xl shadow-lg text-black font-bold">
-            جاري تحميل البيانات...
+        <div className="fixed inset-0 bg-luxury-black/60 backdrop-blur-md flex justify-center items-center z-90">
+          <div className="flex flex-col items-center gap-6">
+            <img src="/logo.png" className="w-24 h-24 object-contain animate-premium-float" alt="Loading" />
+            <div className="flex gap-2">
+              <div className="w-2 h-2 bg-gold rounded-full animate-bounce [animation-delay:-0.3s]" />
+              <div className="w-2 h-2 bg-gold rounded-full animate-bounce [animation-delay:-0.15s]" />
+              <div className="w-2 h-2 bg-gold rounded-full animate-bounce" />
+            </div>
           </div>
         </div>
       )}
@@ -547,79 +608,124 @@ export default function Admin() {
       {/* Inputs مخفية للملفات */}
       <input type="file" accept=".xlsx" id="excelUpload" hidden onChange={importFromExcel} />
 
-      <div className="w-full max-w-7xl px-8 sm:px-8 md:px-24">
-        <div className="flex justify-between items-center mb-6 flex-wrap">
-          <h1 className="text-3xl font-extrabold text-[#FCD451] mb-4">لوحة تحكم الشيف عماد</h1>
-          <div className="flex gap-2 flex-wrap">
-            {/* Order Settings Button */}
-            <button
-              onClick={() => setShowOrderSettings(true)}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-yellow-600 text-white font-bold hover:bg-yellow-500 transition hover:cursor-pointer"
-            >
-              <FiSettings size={18} />
-            </button>
-            {/* Excel Buttons */}
-            <button
-              onClick={exportToExcel}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-green-600 text-white font-bold hover:bg-green-500 transition hover:cursor-pointer"
-            >
-              <FiUpload size={18} />
-            </button>
-            <button
-              onClick={() => document.getElementById
-                ("excelUpload")?.click()}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-500 transition hover:cursor-pointer"
-            >
-              <FiDownload size={18} />
-            </button>
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-4 md:px-6 py-8">
+        {/* Header Section */}
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col lg:flex-row justify-between items-center gap-4 mb-8 bg-white/5 border border-white/5 p-5 rounded-3xl backdrop-blur-xl"
+        >
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 p-1 rounded-full bg-linear-to-br from-gold/30 to-transparent">
+              <div className="w-full h-full rounded-full bg-luxury-black flex items-center justify-center border border-white/10">
+                <img src="/logo.png" className="w-10 h-10 object-contain" alt="Admin" />
+              </div>
+            </div>
+            <div className="flex flex-col">
+              <h1 className="text-2xl font-black text-white tracking-tight">لوحة التحكم</h1>
+              <p className="text-gold/50 text-[10px] font-bold uppercase tracking-[0.2em] mt-1">Chef Emad Admin Portal</p>
+            </div>
+          </div>
 
-            {/* JSON Buttons */}
-            <button
-              onClick={exportToJSON}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#940D11] text-white font-bold hover:bg-[#d02c37] transition hover:cursor-pointer"
-            >
-              backup
-              <FaDatabase size={18} />
-            </button>
+          <div className="flex flex-wrap justify-center gap-3">
+            <div className="flex bg-white/5 p-1.5 rounded-xl border border-white/5 gap-1.5">
+              <button
+                onClick={() => setShowOrderSettings(true)}
+                title="إعدادات النظام"
+                className="w-12 h-12 flex items-center justify-center rounded-xl bg-white/5 text-gold hover:bg-gold hover:text-luxury-black transition-all duration-300"
+              >
+                <FiSettings size={20} />
+              </button>
+              
+              <div className="w-px bg-white/10 mx-1 self-stretch" />
 
-            {/* Logout */}
+              <button
+                onClick={exportToExcel}
+                title="تصدير Excel"
+                className="w-12 h-12 flex items-center justify-center rounded-xl bg-green-500/10 text-green-500 hover:bg-green-500 hover:text-white transition-all duration-300"
+              >
+                <FiUpload size={20} />
+              </button>
+              <button
+                onClick={() => document.getElementById("excelUpload")?.click()}
+                title="استيراد Excel"
+                className="w-12 h-12 flex items-center justify-center rounded-xl bg-blue-500/10 text-blue-400 hover:bg-blue-500 hover:text-white transition-all duration-300"
+              >
+                <FiDownload size={20} />
+              </button>
+
+              <div className="w-px bg-white/10 mx-1 self-stretch" />
+
+              <PdfExport 
+                categories={categories} 
+                items={items} 
+                restaurantName="طاهي عماد - Chef Emad" 
+              />
+
+              <div className="w-px bg-white/10 mx-1 self-stretch" />
+
+              <button
+                onClick={exportToJSON}
+                title="نسخة احتياطية (JSON)"
+                className="w-12 h-12 flex items-center justify-center rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all duration-300"
+              >
+                <FaDatabase size={18} />
+              </button>
+            </div>
+
             <button
               onClick={() => setPopup({ type: "logout" })}
-              className="px-4 py-2 rounded-xl font-bold bg-[#d60208] text-white flex items-center gap-1 hover:text-black hover:bg-[#d2343a] hover:cursor-pointer"
+              className="flex items-center gap-2 px-5 py-2 rounded-lg bg-white/5 border border-white/10 text-white/60 hover:text-red-500 hover:border-red-500/30 hover:bg-red-500/5 transition-all duration-300 font-bold text-sm"
             >
-              <FiLogOut /> خروج
+              <FiLogOut />
+              <span>خروج</span>
             </button>
           </div>
+        </motion.div>
+
+        {/* Content Sections */}
+        <div className="space-y-8">
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+          >
+            <CategorySection
+              categories={categories}
+              setPopup={setPopup}
+              newCategoryName={newCategoryName}
+              setNewCategoryName={setNewCategoryName}
+            />
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+          >
+            <ItemSection
+              categories={categories}
+              items={items}
+              popup={popup}
+              setPopup={(p) => {
+                setPopup(p);
+                if (p.type === "editItem" && p.id) {
+                  const item = items[p.id];
+                  if (item) {
+                    setEditItemId(p.id);
+                    setEditItemValues({
+                      itemName: item.name,
+                      itemPrice: item.price,
+                      priceTw: item.priceTw || "",
+                      selectedCategory: item.categoryId,
+                      itemIngredients: item.ingredients || "",
+                    });
+                  }
+                }
+              }}
+            />
+          </motion.div>
         </div>
-
-        <CategorySection
-          categories={categories}
-          setPopup={setPopup}
-          newCategoryName={newCategoryName}
-          setNewCategoryName={setNewCategoryName}
-        />
-
-        <ItemSection
-          categories={categories}
-          items={items}
-          popup={popup}
-          setPopup={(p) => {
-            setPopup(p);
-            if (p.type === "editItem" && p.id) {
-              const item = items[p.id];
-              if (item) {
-                setEditItemId(p.id);
-                setEditItemValues({
-                  itemName: item.name,
-                  itemPrice: item.price,
-                  priceTw: item.priceTw || "",
-                  selectedCategory: item.categoryId,
-                  itemIngredients: item.ingredients || "",
-                });
-              }
-            }
-          }}
-        />
 
         <Popup
           popup={popup}
@@ -642,13 +748,15 @@ export default function Admin() {
       </div>
 
       {/* Order Settings Modal */}
-      {showOrderSettings && orderSettings && (
-        <OrderSettingsModal
-          setShowOrderSettings={setShowOrderSettings}
-          orderSettings={orderSettings} // ⚡ الآن تمرر كل الإعدادات
-          onSave={handleSaveOrderSettings}
-        />
-      )}
+      <AnimatePresence>
+        {showOrderSettings && orderSettings && (
+          <OrderSettingsModal
+            setShowOrderSettings={setShowOrderSettings}
+            orderSettings={orderSettings}
+            onSave={handleSaveOrderSettings}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import ItemRow from "./ItemRow";
 import type { Category, Item } from "./Menu";
-import { motion } from "framer-motion"; // <=== Framer Motion
+import { motion } from "framer-motion";
 
 interface Props {
   category: Category;
@@ -10,63 +10,45 @@ interface Props {
 
 export default function CategorySection({ category, items, orderSystem }: Props) {
   return (
-    <section className="w-full px-4 md:px-0 py-8 flex flex-col">
-
-      {/* ===== Premium Category Header ===== */}
-      <div className="flex items-center gap-4 mb-10">
-
-        {/* البار الجانبي */}
-        <div className="relative">
-          <div className="h-10 w-1.5 bg-[#E5CB60] rounded-full shadow-lg shadow-[rgba(229,203,96,0.5)]"></div>
-          <div className="absolute inset-0 bg-[#E5CB60] blur-md opacity-40"></div>
-        </div>
-
-        {/* اسم القسم مع أنيميشن احترافي */}
+    <section className="w-full px-4 md:px-0 py-12 md:py-16">
+      {/* Category Header */}
+      <div className="relative mb-8 md:mb-12">
         <motion.div
-          initial={{ opacity: 0, x: 50 }}           // يبدأ من اليمين
-          whileInView={{ opacity: 1, x: 0 }}       // يتحرك لمكانه الطبيعي
-          transition={{ duration: 2, type: "spring", stiffness: 120, damping: 12 }} // حركة ديناميكية وناعمة
+          initial={{ opacity: 0, x: 20 }}
+          whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="flex flex-col items-start gap-2"
         >
-          <div className="flex flex-col">
-            <h2
-              className="
-                font-[Cairo]
-                font-black
-                text-[#E5CB60]
-                text-2xl md:text-3xl
-                tracking-tight
-              "
-            >
+          <div className="flex items-center gap-3">
+            <div className="w-1.5 h-8 bg-gold rounded-full gold-glow" />
+            <h2 className="text-3xl md:text-4xl font-black text-white tracking-tight">
               {category.name}
             </h2>
+          </div>
 
-            {/* عدد الأصناف */}
-            <div className="flex items-center gap-2 mt-1">
-              <span className="text-[11px] font-bold text-[#E5CB60] bg-[#E5CB60]/10 px-2 py-0.5 rounded-lg border border-[#E5CB60]/20">
-                {items.length > 1 ? `${items.length} أصناف` : `${items.length} صنف`}
-              </span>
-
-              <div className="h-px w-10 bg-[#E5CB60]/30"></div>
-            </div>
+          <div className="flex items-center gap-3 pr-4">
+            <span className="text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] text-gold/60">
+              {items.length} {items.length > 1 ? "أصناف" : "صنف"}
+            </span>
+            <div className="h-px w-12 bg-gold/20" />
           </div>
         </motion.div>
 
-        {/* الخط الممتد */}
-        <div className="flex-1 h-px bg-linear-to-l from-[#E5CB60]/40 to-transparent"></div>
+        {/* Premium Background Accent */}
+        <div className="absolute -top-10 -right-10 w-40 h-40 bg-gold/5 blur-[100px] rounded-full pointer-events-none" />
       </div>
 
-      {/* ===== Items ===== */}
-      <div className="flex flex-col gap-2 w-full max-w-full mx-auto">
+      {/* Items Grid/List */}
+      <div className="grid grid-cols-1 gap-3 md:gap-4 lg:gap-5 w-full">
         {items.map((item) => (
-
           <ItemRow
+            key={item.id}
             item={item}
             orderSystem={orderSystem}
           />
         ))}
       </div>
-
     </section>
   );
 }

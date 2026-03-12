@@ -1,5 +1,9 @@
 import React from "react";
+import { createPortal } from "react-dom";
 import { type PopupState } from "./types";
+import { motion, AnimatePresence } from "framer-motion";
+import { FiX, FiEdit, FiLogOut, FiSave, FiRefreshCw } from "react-icons/fi";
+import { HiOutlineExclamationTriangle } from "react-icons/hi2";
 
 interface Props {
   popup: PopupState;
@@ -8,27 +12,21 @@ interface Props {
   deleteCategory?: (id: string) => void;
   addCategory?: () => void;
   updateItem?: () => void;
-
-
   editItemValues?: {
     itemName: string;
     itemPrice: string;
     priceTw: string;
     selectedCategory: string;
-    itemIngredients?: string; // ✅ أضفنا المكونات
-
+    itemIngredients?: string;
   };
   setEditItemValues?: (values: {
     itemName: string;
     itemPrice: string;
     priceTw: string;
     selectedCategory: string;
-    itemIngredients?: string; // ✅ أضفنا المكونات
-
+    itemIngredients?: string;
   }) => void;
   categories?: any;
-
-  // ===== خصائص reset password =====
   resetPasswordPopup?: boolean;
   setResetPasswordPopup?: (val: boolean) => void;
   resetEmail?: string;
@@ -56,236 +54,262 @@ const Popup: React.FC<Props> = ({
   handleResetPassword,
   logout,
 }) => {
-  // إذا لا يوجد أي popup
   if (!popup.type && !resetPasswordPopup) return null;
 
-  return (
-    <>
-      {/* خلفية قاتمة */}
-      <div className="fixed inset-0 z-40 bg-black/80 backdrop-blur-sm"
-        onClick={() => {
-          setPopup({ type: null });
-          setResetPasswordPopup && setResetPasswordPopup(false);
-        }}
-      />
+  return createPortal(
+    <AnimatePresence>
+      {(popup.type || resetPasswordPopup) && (
+        <>
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-9999 bg-luxury-black/95 backdrop-blur-md"
+            onClick={() => {
+              setPopup({ type: null });
+              setResetPasswordPopup && setResetPasswordPopup(false);
+            }}
+          />
 
-      {/* محتوى Popup */}
-      <div className="fixed inset-0 z-50 flex items-center justify-center " >
-        <div className="relative bg-white p-6 rounded-3xl shadow-2xl w-72 sm:w-80 border-4" style={{ borderColor: "#FCD451" }} >
-          {/* ===== Logout ===== */}
-          {popup.type === "logout" && (
-            <>
-              <p className="mb-4 font-bold text-center">تسجيل الخروج؟</p>
-              <div className="flex justify-center gap-4">
-                <button
-                  onClick={() => {
-                    logout && logout();
-                    setPopup({ type: null });
-                  }}
-                  className="px-5 py-2 rounded-xl font-bold bg-[#FCD451] text-black hover:bg-[#FCD451]/80 hover:cursor-pointer"
-                >
-                  نعم
-                </button>
-                <button
-                  onClick={() => setPopup({ type: null })}
-                  className="px-5 py-2 rounded-xl font-bold border hover:cursor-pointer"
-                >
-                  لا
-                </button>
-              </div>
-            </>
-          )}
+          {/* Modal Content */}
+          <div className="fixed inset-0 z-10000 flex items-center justify-center p-4" dir="rtl">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative glass-morphic p-6 md:p-8 rounded-3xl border border-white/5 w-full max-w-md shadow-2xl overflow-hidden"
+            >
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gold/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl pointer-events-none" />
 
-          {/* ===== Add Category ===== */}
-          {popup.type === "addCategory" && (
-            <>
-              <p className="mb-4 font-bold text-center">إضافة قسم</p>
-              <div className="flex justify-center gap-4">
-                <button
-                  onClick={addCategory}
-                  className="bg-green-600 text-white px-4 py-2 rounded-xl w-full hover:cursor-pointer"
-                >
-                  حفظ
-                </button>
-                <button
-                  onClick={() => setPopup({ type: null })}
-                  className="bg-red-500 text-white px-5 py-2 rounded-xl font-bold border hover:cursor-pointer"
-                >
-                  إلغاء
-                </button>
-              </div>
-            </>
-          )}
-
-          {/* ===== Delete Category ===== */}
-          {popup.type === "deleteCategory" && (
-            <>
-              <p className="mb-4 font-bold text-center">تأكيد حذف القسم؟</p>
-              <div className="flex justify-center gap-4">
-                <button
-                  onClick={() => deleteCategory && deleteCategory(popup.id!)}
-                  className="px-5 py-2 rounded-xl font-bold bg-red-600 text-white hover:cursor-pointer"
-                >
-                  حذف
-                </button>
-                <button
-                  onClick={() => setPopup({ type: null })}
-                  className="px-5 py-2 rounded-xl font-bold border hover:cursor-pointer"
-                >
-                  إلغاء
-                </button>
-              </div>
-            </>
-          )}
-
-          {/* ===== Delete Item ===== */}
-          {popup.type === "deleteItem" && (
-            <>
-              <h2 className="text-xl font-bold mb-4 text-center">تأكيد الحذف</h2>
-              <p className="text-center mb-6">هل أنت متأكد من حذف هذا المنتج؟</p>
-              <div className="flex justify-center gap-4">
-                <button
-                  onClick={deleteItem}
-                  className="px-5 py-2 rounded-xl font-bold bg-red-600 text-white hover:cursor-pointer"
-                >
-                  نعم، حذف
-                </button>
-                <button
-                  onClick={() => setPopup({ type: null })}
-                  className="px-5 py-2 rounded-xl font-bold border hover:cursor-pointer"
-                >
-                  لا
-                </button>
-              </div>
-            </>
-          )}
-
-          {/* ===== Edit Item ===== */}
-          {popup.type === "editItem" && editItemValues && setEditItemValues && categories && (
-            <>
-              <h2 className="text-xl font-bold mb-4 text-center">تعديل المنتج</h2>
-
-              <select
-                className="w-full p-2 border rounded-xl mb-3"
-                value={editItemValues.selectedCategory}
-                onChange={(e) =>
-                  setEditItemValues({
-                    ...editItemValues,
-                    selectedCategory: e.target.value,
-                  })
-                }
+              <button
+                onClick={() => {
+                  setPopup({ type: null });
+                  setResetPasswordPopup && setResetPasswordPopup(false);
+                }}
+                className="absolute top-4 left-4 text-white/50 hover:text-white transition-colors z-20"
+                title="إغلاق"
               >
-                {Object.keys(categories).map((id) => (
-                  <option key={id} value={id}>
-                    {categories[id].name}
-                  </option>
-                ))}
-              </select>
+                <FiX size={24} />
+              </button>
 
-              <input
-                className="w-full p-2 border rounded-xl mb-3"
-                placeholder="اسم المنتج"
-                value={editItemValues.itemName}
-                onChange={(e) =>
-                  setEditItemValues({
-                    ...editItemValues,
-                    itemName: e.target.value,
-                  })
-                }
-              />
-              {/* ✅ حقل المكونات */}
-              <input
-                className="w-full p-2 border rounded-xl mb-3"
-                placeholder="المكونات أو الوصف (اختياري)"
-                value={editItemValues.itemIngredients}
-                onChange={(e) =>
-                  setEditItemValues({
-                    ...editItemValues,
-                    itemIngredients: e.target.value,
-                  })
-                }
-              />
+              <div className="relative z-10">
+                {/* Logout */}
+                {popup.type === "logout" && (
+                  <div className="text-center">
+                    <div className="w-16 h-16 rounded-2xl bg-red-500/10 text-red-500 flex items-center justify-center mx-auto mb-6 border border-red-500/20">
+                      <FiLogOut size={28} />
+                    </div>
+                    <h3 className="text-xl font-black text-white mb-2">تسجيل الخروج</h3>
+                    <p className="text-white/40 mb-6 font-medium italic text-sm">هل أنت متأكد من رغبتك في الخروج؟</p>
+                    <div className="flex flex-col gap-3">
+                      <button
+                        onClick={() => {
+                          logout && logout();
+                          setPopup({ type: null });
+                        }}
+                        className="w-full py-4 rounded-2xl font-black bg-red-500 text-white hover:bg-red-600 transition-all shadow-lg shadow-red-500/20 text-sm uppercase tracking-widest active:scale-95"
+                      >
+                        نعم، خروج
+                      </button>
+                      <button
+                        onClick={() => setPopup({ type: null })}
+                        className="w-full py-4 rounded-2xl font-black border border-white/10 text-white/60 hover:text-white hover:bg-white/5 transition-all text-sm uppercase tracking-widest active:scale-95"
+                      >
+                        إلغاء
+                      </button>
+                    </div>
+                  </div>
+                )}
 
-              <input
-                className="w-full p-2 border rounded-xl mb-4"
-                placeholder="الأسعار (افصل بين الأسعار بفاصلة)"
-                value={editItemValues.itemPrice}
-                onChange={(e) =>
-                  setEditItemValues({
-                    ...editItemValues,
-                    itemPrice: e.target.value,
-                  })
-                }
-              />
+                {/* Add Category Confirmation */}
+                {popup.type === "addCategory" && (
+                  <div className="text-center">
+                    <div className="w-16 h-16 rounded-2xl bg-green-500/10 text-green-500 flex items-center justify-center mx-auto mb-6 border border-green-500/20">
+                      <FiSave size={28} />
+                    </div>
+                    <h3 className="text-xl font-black text-white mb-2">تأكيد الإضافة</h3>
+                    <p className="text-white/40 mb-6 font-medium italic text-sm">هل تريد حفظ هذا القسم الجديد في المنيو؟</p>
+                    <div className="flex flex-col gap-3">
+                      <button
+                        onClick={addCategory}
+                        className="w-full py-4 rounded-2xl font-black bg-green-500 text-white hover:bg-green-600 transition-all shadow-lg shadow-green-500/20 text-sm uppercase tracking-widest active:scale-95"
+                      >
+                        حفظ القسم
+                      </button>
+                      <button
+                        onClick={() => setPopup({ type: null })}
+                        className="w-full py-4 rounded-2xl font-black border border-white/10 text-white/60 hover:text-white hover:bg-white/5 transition-all text-sm uppercase tracking-widest active:scale-95"
+                      >
+                        إلغاء
+                      </button>
+                    </div>
+                  </div>
+                )}
 
-              {/* <input
-                type="number"
-                placeholder="سعر TW (اختياري)"
-                className="w-full p-2 border rounded-xl mb-4"
-                value={editItemValues.priceTw}
-                onChange={(e) =>
-                  setEditItemValues({
-                    ...editItemValues,
-                    priceTw: e.target.value,
-                  })
-                }
-              /> */}
+                {/* Delete Category / Item Confirmation */}
+                {(popup.type === "deleteCategory" || popup.type === "deleteItem") && (
+                  <div className="text-center">
+                    <div className="w-16 h-16 rounded-2xl bg-red-500/10 text-red-500 flex items-center justify-center mx-auto mb-6 border border-red-500/20">
+                      <HiOutlineExclamationTriangle size={32} />
+                    </div>
+                    <h3 className="text-xl font-black text-white mb-2">تأكيد الحذف</h3>
+                    <p className="text-white/40 mb-6 font-medium italic text-sm">
+                      {popup.type === "deleteCategory" ? "سيتم حذف القسم وجميع المنتجات المرتبطة به نهائياً." : "هل أنت متأكد من رغبتك في حذف هذا المنتج من المنيو؟"}
+                    </p>
+                    <div className="flex flex-col gap-3">
+                      <button
+                        onClick={() => {
+                          if (popup.type === "deleteCategory") deleteCategory && deleteCategory(popup.id!);
+                          else deleteItem && deleteItem();
+                          setPopup({ type: null });
+                        }}
+                        className="w-full py-4 rounded-2xl font-black bg-red-500 text-white hover:bg-red-600 transition-all shadow-lg shadow-red-500/20 text-sm uppercase tracking-widest active:scale-95"
+                      >
+                        حذف نهائي
+                      </button>
+                      <button
+                        onClick={() => setPopup({ type: null })}
+                        className="w-full py-4 rounded-2xl font-black border border-white/10 text-white/60 hover:text-white hover:bg-white/5 transition-all text-sm uppercase tracking-widest active:scale-95"
+                      >
+                        إلغاء
+                      </button>
+                    </div>
+                  </div>
+                )}
 
-              <div className="flex justify-end gap-2">
-                <button
-                  onClick={updateItem}
-                  className="px-4 py-2 rounded-xl font-bold bg-[#FCD451] hover:cursor-pointer hover:text-black hover:bg-[#FCD451]/80 transition"
-                >
-                  حفظ
-                </button>
-                <button
-                  onClick={() => setPopup({ type: null })}
-                  className="px-4 py-2 rounded-xl border hover:cursor-pointer"
-                >
-                  إلغاء
-                </button>
+                {/* Edit Item */}
+                {popup.type === "editItem" && editItemValues && setEditItemValues && categories && (
+                  <div>
+                    <div className="flex items-center gap-4 mb-8">
+                      <div className="w-12 h-12 rounded-2xl bg-gold/10 text-gold flex items-center justify-center border border-gold/20">
+                        <FiEdit size={24} />
+                      </div>
+                      <h3 className="text-2xl font-black text-white">تعديل المنتج</h3>
+                    </div>
+                    <div className="space-y-4">
+                      <div className="flex flex-col gap-2">
+                        <label className="text-[10px] uppercase tracking-widest text-white/40 font-black mr-2">الفئة</label>
+                        <select
+                          className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white outline-none focus:border-gold/50 transition-all font-bold appearance-none cursor-pointer"
+                          value={editItemValues.selectedCategory}
+                          onChange={(e) =>
+                            setEditItemValues({
+                              ...editItemValues,
+                              selectedCategory: e.target.value,
+                            })
+                          }
+                        >
+                          {Object.keys(categories).map((id) => (
+                            <option key={id} value={id} className="bg-luxury-black text-white">
+                              {categories[id].name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <label className="text-[10px] uppercase tracking-widest text-white/40 font-black mr-2">اسم المنتج</label>
+                        <input
+                          className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white outline-none focus:border-gold/50 transition-all font-bold placeholder:text-white/10"
+                          placeholder="اسم المنتج"
+                          value={editItemValues.itemName}
+                          onChange={(e) =>
+                            setEditItemValues({
+                              ...editItemValues,
+                              itemName: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <label className="text-[10px] uppercase tracking-widest text-white/40 font-black mr-2">الوصف</label>
+                        <input
+                          className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white outline-none focus:border-gold/50 transition-all font-bold placeholder:text-white/10"
+                          placeholder="المكونات أو الوصف..."
+                          value={editItemValues.itemIngredients}
+                          onChange={(e) =>
+                            setEditItemValues({
+                              ...editItemValues,
+                              itemIngredients: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <label className="text-[10px] uppercase tracking-widest text-white/40 font-black mr-2">الأسعار</label>
+                        <input
+                          className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white outline-none focus:border-gold/50 transition-all font-bold placeholder:text-white/10"
+                          placeholder="الأسعار (مثال: 20, 35)"
+                          value={editItemValues.itemPrice}
+                          onChange={(e) =>
+                            setEditItemValues({
+                              ...editItemValues,
+                              itemPrice: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                      <div className="flex flex-col gap-3 pt-4">
+                        <button
+                          onClick={updateItem}
+                          className="w-full py-4 rounded-2xl font-black bg-gold text-luxury-black hover:bg-gold/90 transition-all shadow-lg shadow-gold/20 text-sm uppercase tracking-widest active:scale-95"
+                        >
+                          حفظ التغييرات
+                        </button>
+                        <button
+                          onClick={() => setPopup({ type: null })}
+                          className="w-full py-4 rounded-2xl font-black border border-white/10 text-white/60 hover:text-white hover:bg-white/5 transition-all text-sm uppercase tracking-widest active:scale-95"
+                        >
+                          إلغاء
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Reset Password */}
+                {resetPasswordPopup && (
+                  <div className="text-center">
+                    <div className="w-16 h-16 rounded-2xl bg-blue-500/10 text-blue-500 flex items-center justify-center mx-auto mb-6 border border-blue-500/20">
+                      <FiRefreshCw size={28} />
+                    </div>
+                    <h3 className="text-xl font-black text-white mb-2">استعادة كلمة المرور</h3>
+                    <p className="text-white/40 mb-6 font-medium italic text-sm">أدخل بريدك الإلكتروني ليتم إرسال رابط الاستعادة</p>
+                    <input
+                      type="email"
+                      placeholder="أدخل بريدك الإلكتروني"
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white outline-none focus:border-gold/50 transition-all font-bold placeholder:text-white/10 mb-4"
+                      value={resetEmail}
+                      onChange={(e) => setResetEmail && setResetEmail(e.target.value)}
+                    />
+                    {resetMessage && (
+                      <div className="p-4 rounded-2xl bg-green-500/10 border border-green-500/20 text-green-500 text-sm font-bold mb-6">
+                        {resetMessage}
+                      </div>
+                    )}
+                    <div className="flex flex-col gap-3">
+                      <button
+                        onClick={handleResetPassword}
+                        className="w-full py-4 rounded-2xl font-black bg-blue-600 text-white hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20 text-sm uppercase tracking-widest active:scale-95"
+                      >
+                        إرسال الرابط
+                      </button>
+                      <button
+                        onClick={() => setResetPasswordPopup && setResetPasswordPopup(false)}
+                        className="w-full py-4 rounded-2xl font-black border border-white/10 text-white/60 hover:text-white hover:bg-white/5 transition-all text-sm uppercase tracking-widest active:scale-95"
+                      >
+                        إلغاء
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
-            </>
-          )}
-
-          {/* ===== Reset Password ===== */}
-          {resetPasswordPopup && (
-            <>
-              <h2 className="text-xl font-bold mb-4 text-red-600 text-center">
-                إعادة تعيين كلمة المرور
-              </h2>
-
-              <input
-                type="email"
-                placeholder="أدخل بريدك الإلكتروني"
-                className="w-full p-3 border rounded-xl mb-3"
-                value={resetEmail}
-                onChange={(e) => setResetEmail && setResetEmail(e.target.value)}
-              />
-
-              {resetMessage && (
-                <p className="text-sm text-center text-green-600 mb-2">{resetMessage}</p>
-              )}
-
-              <div className="flex justify-end gap-2">
-                <button
-                  onClick={handleResetPassword}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700 transition hover:cursor-pointer"
-                >
-                  إرسال الرابط
-                </button>
-                <button
-                  onClick={() => setResetPasswordPopup && setResetPasswordPopup(false)}
-                  className="px-4 py-2 rounded-xl border hover:bg-gray-100 transition hover:cursor-pointer"
-                >
-                  إلغاء
-                </button>
-              </div>
-            </>
-          )}
-        </div>
-      </div>
-    </>
+            </motion.div>
+          </div>
+        </>
+      )}
+    </AnimatePresence>,
+    document.body
   );
 };
 
