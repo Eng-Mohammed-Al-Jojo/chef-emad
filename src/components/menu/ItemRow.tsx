@@ -55,11 +55,11 @@ export default function ItemRow({ item }: Props) {
               {item.name}
 
             </h3>
-            {item.star && !unavailable && (
+            {/* {item.star && !unavailable && (
               <span className="text-gold text-xs bg-gold/10 px-2 py-0.5 rounded-full border border-gold/20 font-bold">
                 ⭐
               </span>
-            )}
+            )} */}
           </div>
 
           {hasIngredients && (

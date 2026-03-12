@@ -325,13 +325,15 @@ export default function Menu({ onLoadingChange, onFeaturedCheck }: Props) {
 
       {/* ===== Tabs الأقسام ===== */}
       <nav className="sticky top-6 z-40 mb-8 md:mb-12">
-        <div className="flex items-center justify-start overflow-x-auto gap-2 p-1.5 bg-luxury-black/60 backdrop-blur-xl border border-white/5 rounded-3xl scrollbar-hide">
+        <div className="flex flex-wrap justify-center gap-3 p-1.5 bg-luxury-black/60 backdrop-blur-xl border border-white/5 rounded-3xl">
+
+          {/* زر "جميع الأصناف" */}
           <button
             onClick={() => setActiveCatId("all")}
             className={`
-              relative px-5 py-2.5 rounded-2xl md:px-6 md:py-3 text-sm md:text-base font-bold whitespace-nowrap transition-all duration-300
-              ${activeCatId === "all" ? "text-luxury-black" : "text-white/60 hover:text-white hover:bg-white/5"}
-            `}
+        relative px-5 py-2.5 md:px-6 md:py-3 rounded-2xl text-sm md:text-base font-bold transition-all duration-300
+        ${activeCatId === "all" ? "text-luxury-black" : "text-white/60 hover:text-white hover:bg-white/5"}
+      `}
           >
             {activeCatId === "all" && (
               <motion.div
@@ -343,14 +345,15 @@ export default function Menu({ onLoadingChange, onFeaturedCheck }: Props) {
             جميع الأصناف
           </button>
 
+          {/* باقي الأقسام */}
           {availableCategoriesWithItems.map((cat) => (
             <button
               key={cat.id}
               onClick={() => setActiveCatId(cat.id)}
               className={`
-                relative px-5 py-2.5 rounded-2xl md:px-6 md:py-3 text-sm md:text-base font-bold whitespace-nowrap transition-all duration-300
-                ${activeCatId === cat.id ? "text-luxury-black" : "text-white/60 hover:text-white hover:bg-white/5"}
-              `}
+          relative px-5 py-2.5 md:px-6 md:py-3 rounded-2xl text-sm md:text-base font-bold transition-all duration-300
+          ${activeCatId === cat.id ? "text-luxury-black" : "text-white/60 hover:text-white hover:bg-white/5"}
+        `}
             >
               {activeCatId === cat.id && (
                 <motion.div
