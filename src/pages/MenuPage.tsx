@@ -28,7 +28,7 @@ export default function MenuPage() {
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, ease: "easeOut" }}
+          transition={{ duration: 1.5, ease: "easeOut" }}
           className="flex flex-col items-center justify-center w-full pt-16 pb-8 px-4"
         >
           <div className="relative group">
@@ -77,11 +77,11 @@ export default function MenuPage() {
             >
               <div className="absolute inset-0 bg-gold/5 opacity-0 group-hover:opacity-100 transition-opacity" />
 
-              <div className="relative w-9 h-9 flex items-center justify-center bg-gold rounded-full text-luxury-black shadow-md shadow-gold/20">
+              <div className="relative w-7 h-7 md:w-9 md:h-9 flex items-center justify-center bg-gold rounded-full text-luxury-black shadow-md shadow-gold/20">
                 <FaFire className="w-4 h-4 animate-pulse" />
               </div>
 
-              <span className="relative text-xs font-black text-gold tracking-wider">
+              <span className="relative text-[10px] md:text-sm font-black text-gold tracking-wider">
                 الأكثر طلباً
               </span>
             </button>

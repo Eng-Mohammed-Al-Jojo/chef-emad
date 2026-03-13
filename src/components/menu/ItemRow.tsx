@@ -17,7 +17,7 @@ export default function ItemRow({ item }: Props) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       whileHover={!unavailable ? { scale: 1.01, y: -2 } : {}}
-      transition={{ duration: 0.4, ease: "easeOut" }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
       className={`
         group relative overflow-hidden
         rounded-2xl md:rounded-3xl
@@ -56,7 +56,7 @@ export default function ItemRow({ item }: Props) {
           {hasIngredients && (
             <p
               className={`
-        text-sm md:text-base font-light leading-relaxed
+        text-[10px] md:text-sm font-light leading-relaxed
         ${unavailable
                   ? "text-white/20"
                   : "text-white/50 group-hover:text-white/70 transition-colors duration-300"}
@@ -71,7 +71,7 @@ export default function ItemRow({ item }: Props) {
         <div className="flex items-center shrink-0">
           <div
             className={`
-        min-w-[80px] md:min-w-[100px]
+        min-w-[70px] md:min-w-[80px]
         py-2
         rounded-xl md:rounded-2xl
         text-center

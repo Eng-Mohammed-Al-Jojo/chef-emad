@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { FiPlus, FiTrash2, FiEdit, FiCheck } from "react-icons/fi";
 import { db } from "../../firebase";
 import { ref, update } from "firebase/database";
@@ -267,36 +268,38 @@ const CategorySection: React.FC<Props> = ({
         </button>
 
         {/* Accordion Animation */}
-        <div
-          className={`
-              overflow-hidden
-              transition-all duration-500 ease-in-out
-              ${openCategories
-              ? "max-h-[3000px] opacity-100 mt-4"
-              : "max-h-0 opacity-0"}
-            `}
-        >
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 border-t border-white/5">
-            {categoriesArray.map((cat) => (
-              <SortableCategory
-                key={cat.id}
-                cat={cat}
-                editingId={editingId}
-                tempName={tempName}
-                setTempName={setTempName}
-                saveEdit={saveEdit}
-                startEditing={startEditing}
-                toggleAvailability={toggleAvailability}
-                setPopup={setPopup}
-              />
-            ))}
-          </div>
-          {categoriesArray.length === 0 && (
-            <div className="text-center py-10 text-white/20 font-bold border-2 border-dashed border-white/5 rounded-4xl">
-              لا توجد أقسام مضافة بعد
-            </div>
+        <AnimatePresence initial={false}>
+          {openCategories && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              className="overflow-hidden"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 border-t border-white/5">
+                {categoriesArray.map((cat) => (
+                  <SortableCategory
+                    key={cat.id}
+                    cat={cat}
+                    editingId={editingId}
+                    tempName={tempName}
+                    setTempName={setTempName}
+                    saveEdit={saveEdit}
+                    startEditing={startEditing}
+                    toggleAvailability={toggleAvailability}
+                    setPopup={setPopup}
+                  />
+                ))}
+              </div>
+              {categoriesArray.length === 0 && (
+                <div className="text-center py-10 text-white/20 font-bold border-2 border-dashed border-white/5 rounded-4xl">
+                  لا توجد أقسام مضافة بعد
+                </div>
+              )}
+            </motion.div>
           )}
-          </div>
+        </AnimatePresence>
         </div>
       </SortableContext>
     </DndContext>

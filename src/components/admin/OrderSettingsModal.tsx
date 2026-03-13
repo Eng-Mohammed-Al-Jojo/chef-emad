@@ -1,273 +1,247 @@
-import { useState, useEffect } from "react";
-import { createPortal } from "react-dom";
-import { ref, update } from "firebase/database";
-import { db } from "../../firebase";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiX, FiSettings, FiSave, FiMapPin, FiPhone, FiMessageCircle, FiFacebook, FiInstagram, FiMessageSquare, FiAlertCircle } from "react-icons/fi";
-import { FaTiktok } from "react-icons/fa";
+import { FiX, FiCheck, FiInfo, FiPhone, FiMapPin, FiMessageSquare, FiFacebook, FiInstagram, FiVideo } from "react-icons/fi";
+import { RiWhatsappLine } from "react-icons/ri";
+import type { Settings } from "./types";
 
-/* ================= Toast ================= */
-function Toast({ type, message }: { type: "success" | "error"; message: string }) {
-    return (
+interface OrderSettingsModalProps {
+  visible: boolean;
+  onClose: () => void;
+  onSave: (settings: Settings) => void;
+  initialSettings: Settings | null;
+}
+
+const OrderSettingsModal: React.FC<OrderSettingsModalProps> = ({
+  visible,
+  onClose,
+  onSave,
+  initialSettings,
+}) => {
+  const [settings, setSettings] = useState<Settings>(initialSettings || {
+    orderSystem: true,
+    orderSettings: { inRestaurant: true, takeaway: true, inPhone: "", outPhone: "" },
+    complaintsWhatsapp: "",
+    footerInfo: { address: "", phone: "", whatsapp: "", facebook: "", instagram: "", tiktok: "" }
+  });
+
+  useEffect(() => {
+    if (initialSettings) setSettings(initialSettings);
+  }, [initialSettings]);
+
+  if (!visible) return null;
+
+  const handleSave = () => {
+    onSave(settings);
+    onClose();
+  };
+
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-luxury-black/90 backdrop-blur-xl z-50 flex items-center justify-center p-4 overflow-y-auto"
+        dir="rtl"
+      >
         <motion.div
-            initial={{ opacity: 0, y: 50, x: "-50%" }}
-            animate={{ opacity: 1, y: 0, x: "-50%" }}
-            exit={{ opacity: 0, scale: 0.9, x: "-50%" }}
-            className={`fixed bottom-10 left-1/2 z-11000
-            px-8 py-4 rounded-2xl shadow-2xl text-white text-sm font-black uppercase tracking-widest flex items-center gap-3 backdrop-blur-xl border
-            ${type === "success" ? "bg-green-500/90 border-green-500/20" : "bg-red-500/90 border-red-500/20"}`}
+          initial={{ scale: 0.9, opacity: 0, y: 20 }}
+          animate={{ scale: 1, opacity: 1, y: 0 }}
+          exit={{ scale: 0.9, opacity: 0, y: 20 }}
+          className="bg-white/5 border border-white/10 rounded-[2.5rem] w-full max-w-2xl overflow-hidden shadow-2xl relative"
         >
-            {type === "success" ? <FiSave /> : <FiAlertCircle />}
-            {message}
-        </motion.div>
-    );
-}
-
-/* ================= Reusable ================= */
-const inputClass =
-    "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none placeholder:text-white/10 focus:border-gold/50 transition-all font-bold text-white";
-
-/* ================= Modal ================= */
-export default function OrderSettingsModal({
-    setShowOrderSettings,
-    orderSettings: initialSettings,
-    onSave,
-}: {
-    setShowOrderSettings: (v: boolean) => void;
-    orderSettings: any;
-    onSave: (newSettings: any) => void;
-}) {
-    const [orderSystem, setOrderSystem] = useState(true);
-    const [inRestaurant, setInRestaurant] = useState(false);
-    const [takeaway, setTakeaway] = useState(false);
-    const [inPhone, setInPhone] = useState("");
-    const [outPhone, setOutPhone] = useState("");
-    const [complaintsWhatsapp, setComplaintsWhatsapp] = useState("");
-    const [footer, setFooter] = useState({
-        address: "",
-        phone: "",
-        whatsapp: "",
-        facebook: "",
-        instagram: "",
-        tiktok: "",
-    });
-
-    const [loading, setLoading] = useState(true);
-    const [saving, setSaving] = useState(false);
-    const [toast, setToast] = useState<any>(null);
-
-    /* ===== Initialize state from Admin props ===== */
-    useEffect(() => {
-        if (!initialSettings) return;
-
-        setOrderSystem(initialSettings.orderSystem ?? true);
-
-        const s = initialSettings.orderSettings ?? {};
-        setInRestaurant(!!s.inRestaurant);
-        setTakeaway(!!s.takeaway);
-        setInPhone(s.inPhone || "");
-        setOutPhone(s.outPhone || "");
-
-        setComplaintsWhatsapp(initialSettings.complaintsWhatsapp || "");
-        setFooter(initialSettings.footerInfo || {});
-        setLoading(false);
-    }, [initialSettings]);
-
-    if (loading) return null;
-
-    /* ===== Save with Validation ===== */
-    const handleSave = async () => {
-        if ((inRestaurant && inPhone.trim() === "") || (takeaway && outPhone.trim() === "")) {
-            setToast({ type: "error", message: "❌ الرجاء إدخال رقم واتساب لكل خدمة مفعّلة" });
-            setTimeout(() => setToast(null), 3000);
-            return;
-        }
-
-        const newSettings = {
-            orderSystem,
-            orderSettings: { inRestaurant, takeaway, inPhone, outPhone },
-            complaintsWhatsapp,
-            footerInfo: footer,
-        };
-
-        try {
-            setSaving(true);
-            await update(ref(db, "settings"), newSettings);
-            onSave?.(newSettings);
-            setToast({ type: "success", message: "💾 تم حفظ الإعدادات بنجاح" });
-            setTimeout(() => setShowOrderSettings(false), 1500);
-        } catch {
-            setToast({ type: "error", message: "❌ فشل الحفظ" });
-        } finally {
-            setSaving(false);
-            setTimeout(() => setToast(null), 3000);
-        }
-    };
-
-    return createPortal(
-        <div className="fixed inset-0 z-9999 flex items-center justify-center p-4">
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="absolute inset-0 bg-luxury-black/95 backdrop-blur-md"
-                onClick={() => setShowOrderSettings(false)}
-            />
-
-            <motion.div
-                initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                className="relative glass-morphic w-full max-w-xl max-h-[90vh] rounded-3xl border border-white/5 text-white shadow-2xl flex flex-col overflow-hidden z-10000"
+          {/* Header */}
+          <div className="px-8 py-6 border-b border-white/10 flex justify-between items-center bg-white/2">
+            <div>
+              <h2 className="text-xl font-black text-white">إعدادات النظام</h2>
+              <p className="text-gold/60 text-[10px] font-bold uppercase tracking-widest mt-1">System Configuration</p>
+            </div>
+            <button
+              onClick={onClose}
+              className="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 text-white/40 hover:bg-red-500 hover:text-white transition-all"
             >
-                {/* Decorative element */}
-                <div className="absolute top-0 right-0 w-48 h-48 bg-gold/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-[80px] pointer-events-none" />
+              <FiX size={20} />
+            </button>
+          </div>
 
-                {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-white/5 relative z-10">
-                    <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-gold/10 text-gold flex items-center justify-center border border-gold/20">
-                            <FiSettings size={20} />
-                        </div>
-                        <h2 className="text-lg font-black">إعدادات النظام</h2>
-                    </div>
+          <div className="p-8 space-y-8 max-h-[70vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gold/20">
+            {/* Order System Toggle */}
+            {/* <div className="flex items-center justify-between p-6 rounded-3xl bg-white/5 border border-white/5">
+              <div className="flex items-center gap-4">
+                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all ${settings.orderSystem ? "bg-gold/20 text-gold" : "bg-white/5 text-white/20"}`}>
+                  <FiSettings size={22} className={settings.orderSystem ? "animate-spin-slow" : ""} />
+                </div>
+                <div>
+                  <h3 className="font-black text-white">نظام الطلبات</h3>
+                  <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest">Master Switch</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setSettings(p => ({ ...p, orderSystem: !p.orderSystem }))}
+                className={`relative w-14 h-7 rounded-full transition-all duration-500 ${settings.orderSystem ? "bg-gold" : "bg-white/10"}`}
+              >
+                <span className={`absolute top-1 left-1 w-5 h-5 rounded-full transition-all duration-500 ${settings.orderSystem ? "translate-x-7 bg-luxury-black" : "translate-x-0 bg-white/40"}`} />
+              </button>
+            </div> */}
+
+            {/* In-Restaurant & Takeaway */}
+            {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className={`p-5 rounded-3xl border transition-all ${settings.orderSettings.inRestaurant ? "bg-gold/5 border-gold/20" : "bg-white/5 border-white/5"}`}>
+                 <div className="flex justify-between items-center mb-4">
+                    <span className="font-black text-sm text-white">طلبات الطاولة</span>
                     <button
-                        onClick={() => setShowOrderSettings(false)}
-                        className="text-white/20 hover:text-white transition-colors"
+                      onClick={() => setSettings(p => ({ ...p, orderSettings: { ...p.orderSettings, inRestaurant: !p.orderSettings.inRestaurant } }))}
+                      className={`w-10 h-5 rounded-full transition-all ${settings.orderSettings.inRestaurant ? "bg-gold" : "bg-white/10"}`}
                     >
-                        <FiX size={24} />
+                      <div className={`w-3 h-3 m-1 rounded-full transition-all ${settings.orderSettings.inRestaurant ? "translate-x-5 bg-luxury-black" : "translate-x-0 bg-white/40"}`} />
                     </button>
-                </div>
+                 </div>
+                 <div className="relative">
+                    <FiSmartphone className="absolute left-3 top-1/2 -translate-y-1/2 text-white/20" />
+                    <input 
+                      type="text" 
+                      placeholder="رقم هاتف الطاولات"
+                      className="w-full bg-black/20 border border-white/5 rounded-xl py-3 px-10 text-xs text-white outline-none focus:border-gold/30 transition-all font-bold"
+                      value={settings.orderSettings.inPhone}
+                      onChange={e => setSettings(p => ({ ...p, orderSettings: { ...p.orderSettings, inPhone: e.target.value } }))}
+                    />
+                 </div>
+              </div>
 
-                {/* Content */}
-                <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6 scrollbar-none relative z-10">
-                    {/* Complaints */}
-                    <div className="bg-linear-to-br from-red-500/10 via-red-500/5 to-transparent border border-red-500/10 rounded-3xl p-5 space-y-4">
-                        <div className="flex items-center gap-3">
-                            <FiMessageCircle className="text-red-500" size={20} />
-                            <p className="font-black text-xs uppercase tracking-[0.2em] text-red-500">منظومة الشكاوى والآراء</p>
-                        </div>
-                        <div className="flex flex-col gap-1.5">
-                            <label className="text-[10px] uppercase tracking-widest text-white/40 font-black mr-2">رقم واتساب المشرف</label>
-                            <input
-                                value={complaintsWhatsapp}
-                                onChange={(e) => setComplaintsWhatsapp(e.target.value.replace(/\D/g, ""))}
-                                placeholder="0097259xxxxxxx"
-                                className="w-full bg-black/20 border border-white/5 rounded-xl px-4 py-3 text-sm outline-none placeholder:text-white/5 focus:border-red-500/50 transition-all font-bold text-white shadow-inner"
-                            />
-                        </div>
-                    </div>
-
-                    {/* Footer Info */}
-                    <div className="space-y-6">
-                        <div className="flex items-center gap-3">
-                            <FiMapPin className="text-gold" size={20} />
-                            <p className="font-black text-[10px] uppercase tracking-[0.2em] text-gold">معلومات الفوتر والتواصل</p>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="flex flex-col gap-1.5 md:col-span-2">
-                                <label className="text-[10px] uppercase tracking-widest text-white/40 font-black mr-2">العنوان</label>
-                                <input
-                                    placeholder="الموقع الجغرافي للمطعم"
-                                    value={footer.address}
-                                    onChange={(e) => setFooter({ ...footer, address: e.target.value })}
-                                    className={inputClass}
-                                />
-                            </div>
-
-                            <div className="flex flex-col gap-1.5">
-                                <label className="text-[10px] uppercase tracking-widest text-white/40 font-black mr-2">رقم الهاتف</label>
-                                <div className="relative">
-                                    <FiPhone className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" />
-                                    <input
-                                        placeholder="05xxxxxxx"
-                                        value={footer.phone}
-                                        onChange={(e) => setFooter({ ...footer, phone: e.target.value })}
-                                        className={inputClass + " pl-10"}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="flex flex-col gap-1.5">
-                                <label className="text-[10px] uppercase tracking-widest text-white/40 font-black mr-2">واتساب</label>
-                                <div className="relative">
-                                    <FiMessageSquare className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" />
-                                    <input
-                                        placeholder="رقم التواصل الرئيسي"
-                                        value={footer.whatsapp}
-                                        onChange={(e) => setFooter({ ...footer, whatsapp: e.target.value })}
-                                        className={inputClass + " pl-10"}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="flex flex-col gap-1.5">
-                                <label className="text-[10px] uppercase tracking-widest text-white/40 font-black mr-2">فيسبوك</label>
-                                <div className="relative">
-                                    <FiFacebook className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" />
-                                    <input
-                                        placeholder="رابط الصفحة"
-                                        value={footer.facebook}
-                                        onChange={(e) => setFooter({ ...footer, facebook: e.target.value })}
-                                        className={inputClass + " pl-10"}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="flex flex-col gap-1.5">
-                                <label className="text-[10px] uppercase tracking-widest text-white/40 font-black mr-2">انستجرام</label>
-                                <div className="relative">
-                                    <FiInstagram className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" />
-                                    <input
-                                        placeholder="رابط الحساب"
-                                        value={footer.instagram}
-                                        onChange={(e) => setFooter({ ...footer, instagram: e.target.value })}
-                                        className={inputClass + " pl-10"}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="flex flex-col gap-1.5 md:col-span-2">
-                                <label className="text-[10px] uppercase tracking-widest text-white/40 font-black mr-2">تيك توك</label>
-                                <div className="relative">
-                                    <FaTiktok className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" />
-                                    <input
-                                        placeholder="رابط الحساب"
-                                        value={footer.tiktok}
-                                        onChange={(e) => setFooter({ ...footer, tiktok: e.target.value })}
-                                        className={inputClass + " pl-10"}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Save */}
-                <div className="px-6 py-4 border-t border-white/5 relative z-20 bg-luxury-black/50 backdrop-blur-md">
+              <div className={`p-5 rounded-3xl border transition-all ${settings.orderSettings.takeaway ? "bg-gold/5 border-gold/20" : "bg-white/5 border-white/5"}`}>
+                 <div className="flex justify-between items-center mb-4">
+                    <span className="font-black text-sm text-white">طلبات التيك أوي</span>
                     <button
-                        onClick={handleSave}
-                        disabled={saving}
-                        className="w-full py-4 rounded-xl bg-gold text-luxury-black font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-gold/20 hover:bg-gold/90 transition-all active:scale-95 flex items-center justify-center gap-3 disabled:opacity-50"
+                      onClick={() => setSettings(p => ({ ...p, orderSettings: { ...p.orderSettings, takeaway: !p.orderSettings.takeaway } }))}
+                      className={`w-10 h-5 rounded-full transition-all ${settings.orderSettings.takeaway ? "bg-gold" : "bg-white/10"}`}
                     >
-                        {saving ? (
-                            <motion.div
-                                animate={{ rotate: 360 }}
-                                transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-                            >
-                                <FiSettings size={20} />
-                            </motion.div>
-                        ) : <FiSave size={20} />}
-                        {saving ? "جاري الحفظ..." : "حفظ التغييرات"}
+                      <div className={`w-3 h-3 m-1 rounded-full transition-all ${settings.orderSettings.takeaway ? "translate-x-5 bg-luxury-black" : "translate-x-0 bg-white/40"}`} />
                     </button>
-                </div>
-            </motion.div>
+                 </div>
+                 <div className="relative">
+                    <FiPhone className="absolute left-3 top-1/2 -translate-y-1/2 text-white/20" />
+                    <input 
+                      type="text" 
+                      placeholder="رقم هاتف التوصيل"
+                      className="w-full bg-black/20 border border-white/5 rounded-xl py-3 px-10 text-xs text-white outline-none focus:border-gold/30 transition-all font-bold"
+                      value={settings.orderSettings.outPhone}
+                      onChange={e => setSettings(p => ({ ...p, orderSettings: { ...p.orderSettings, outPhone: e.target.value } }))}
+                    />
+                 </div>
+              </div>
+            </div> */}
 
-            <AnimatePresence>
-                {toast && <Toast type={toast.type} message={toast.message} />}
-            </AnimatePresence>
-        </div>,
-        document.body
-    );
-}
+            {/* Complaints WhatsApp */}
+            <div className="p-6 rounded-3xl bg-white/5 border border-white/5">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-8 h-8 rounded-lg bg-green-500/20 text-green-500 flex items-center justify-center">
+                  <FiMessageSquare size={16} />
+                </div>
+                <h3 className="font-black text-white text-sm">رقم واتساب الشكاوي</h3>
+              </div>
+              <div className="relative">
+                <RiWhatsappLine className="absolute left-3 top-1/2 -translate-y-1/2 text-green-500/50" size={20} />
+                <input
+                  type="text"
+                  placeholder="970xxxxxxxxx"
+                  className="w-full bg-black/20 border border-white/5 rounded-xl py-4 px-10 text-sm text-white outline-none focus:border-gold/30 transition-all font-bold"
+                  value={settings.complaintsWhatsapp}
+                  onChange={e => setSettings(p => ({ ...p, complaintsWhatsapp: e.target.value }))}
+                />
+              </div>
+            </div>
+
+            {/* Footer Information */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 px-2">
+                <FiInfo className="text-gold" />
+                <h3 className="font-black text-white text-sm">معلومات التذييل (Footer)</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="relative">
+                  <FiMapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-white/20" />
+                  <input
+                    type="text"
+                    placeholder="العنوان"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-10 text-xs text-white outline-none focus:border-gold/50"
+                    value={settings.footerInfo.address}
+                    onChange={e => setSettings(p => ({ ...p, footerInfo: { ...p.footerInfo, address: e.target.value } }))}
+                  />
+                </div>
+                <div className="relative">
+                  <FiPhone className="absolute left-3 top-1/2 -translate-y-1/2 text-white/20" />
+                  <input
+                    type="text"
+                    placeholder="رقم الهاتف"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-10 text-xs text-white outline-none focus:border-gold/50"
+                    value={settings.footerInfo.phone}
+                    onChange={e => setSettings(p => ({ ...p, footerInfo: { ...p.footerInfo, phone: e.target.value } }))}
+                  />
+                </div>
+                <div className="relative">
+                  <RiWhatsappLine className="absolute left-3 top-1/2 -translate-y-1/2 text-white/20" size={18} />
+                  <input
+                    type="text"
+                    placeholder="رابط الواتساب"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-10 text-xs text-white outline-none focus:border-gold/50"
+                    value={settings.footerInfo.whatsapp}
+                    onChange={e => setSettings(p => ({ ...p, footerInfo: { ...p.footerInfo, whatsapp: e.target.value } }))}
+                  />
+                </div>
+                <div className="relative">
+                  <FiFacebook className="absolute left-3 top-1/2 -translate-y-1/2 text-white/20" />
+                  <input
+                    type="text"
+                    placeholder="رابط فيسبوك"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-10 text-xs text-white outline-none focus:border-gold/50"
+                    value={settings.footerInfo.facebook}
+                    onChange={e => setSettings(p => ({ ...p, footerInfo: { ...p.footerInfo, facebook: e.target.value } }))}
+                  />
+                </div>
+                <div className="relative">
+                  <FiInstagram className="absolute left-3 top-1/2 -translate-y-1/2 text-white/20" />
+                  <input
+                    type="text"
+                    placeholder="رابط انستغرام"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-10 text-xs text-white outline-none focus:border-gold/50"
+                    value={settings.footerInfo.instagram}
+                    onChange={e => setSettings(p => ({ ...p, footerInfo: { ...p.footerInfo, instagram: e.target.value } }))}
+                  />
+                </div>
+                <div className="relative">
+                  <FiVideo className="absolute left-3 top-1/2 -translate-y-1/2 text-white/20" />
+                  <input
+                    type="text"
+                    placeholder="رابط تيك توك"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-10 text-xs text-white outline-none focus:border-gold/50"
+                    value={settings.footerInfo.tiktok}
+                    onChange={e => setSettings(p => ({ ...p, footerInfo: { ...p.footerInfo, tiktok: e.target.value } }))}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Footer Actions */}
+          <div className="p-8 bg-white/2 flex gap-3 border-t border-white/10">
+            <button
+              onClick={handleSave}
+              className="flex-1 bg-gold text-luxury-black py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-gold/90 transition shadow-lg shadow-gold/20 flex items-center justify-center gap-2"
+            >
+              <FiCheck size={18} />
+              <span>حفظ التعديلات</span>
+            </button>
+            <button
+              onClick={onClose}
+              className="px-8 bg-white/5 text-white/60 py-4 rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-white/10 transition border border-white/10"
+            >
+              إلغاء
+            </button>
+          </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  );
+};
+
+export default OrderSettingsModal;

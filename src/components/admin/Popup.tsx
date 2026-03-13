@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { createPortal } from "react-dom";
-import { type PopupState } from "./types";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiX, FiEdit, FiLogOut, FiSave, FiRefreshCw } from "react-icons/fi";
 import { HiOutlineExclamationTriangle } from "react-icons/hi2";
+import CustomSelect from "./CustomSelect";
+import { type PopupState } from "./types";
 
 interface Props {
   popup: PopupState;
@@ -15,14 +16,12 @@ interface Props {
   editItemValues?: {
     itemName: string;
     itemPrice: string;
-    priceTw: string;
     selectedCategory: string;
     itemIngredients?: string;
   };
   setEditItemValues?: (values: {
     itemName: string;
     itemPrice: string;
-    priceTw: string;
     selectedCategory: string;
     itemIngredients?: string;
   }) => void;
@@ -122,7 +121,7 @@ const Popup: React.FC<Props> = ({
                   </div>
                 )}
 
-                {/* Add Category Confirmation */}
+                {/* Add Category */}
                 {popup.type === "addCategory" && (
                   <div className="text-center">
                     <div className="w-16 h-16 rounded-2xl bg-green-500/10 text-green-500 flex items-center justify-center mx-auto mb-6 border border-green-500/20">
@@ -147,7 +146,7 @@ const Popup: React.FC<Props> = ({
                   </div>
                 )}
 
-                {/* Delete Category / Item Confirmation */}
+                {/* Delete Item / Category */}
                 {(popup.type === "deleteCategory" || popup.type === "deleteItem") && (
                   <div className="text-center">
                     <div className="w-16 h-16 rounded-2xl bg-red-500/10 text-red-500 flex items-center justify-center mx-auto mb-6 border border-red-500/20">
@@ -155,7 +154,9 @@ const Popup: React.FC<Props> = ({
                     </div>
                     <h3 className="text-xl font-black text-white mb-2">تأكيد الحذف</h3>
                     <p className="text-white/40 mb-6 font-medium italic text-sm">
-                      {popup.type === "deleteCategory" ? "سيتم حذف القسم وجميع المنتجات المرتبطة به نهائياً." : "هل أنت متأكد من رغبتك في حذف هذا المنتج من المنيو؟"}
+                      {popup.type === "deleteCategory"
+                        ? "سيتم حذف القسم وجميع المنتجات المرتبطة به نهائياً."
+                        : "هل أنت متأكد من رغبتك في حذف هذا المنتج من المنيو؟"}
                     </p>
                     <div className="flex flex-col gap-3">
                       <button
@@ -179,7 +180,7 @@ const Popup: React.FC<Props> = ({
                 )}
 
                 {/* Edit Item */}
-                {popup.type === "editItem" && editItemValues && setEditItemValues && categories && (
+                {popup.type === "editItem" && popup.id && categories && editItemValues && setEditItemValues && (
                   <div>
                     <div className="flex items-center gap-4 mb-8">
                       <div className="w-12 h-12 rounded-2xl bg-gold/10 text-gold flex items-center justify-center border border-gold/20">
@@ -188,25 +189,31 @@ const Popup: React.FC<Props> = ({
                       <h3 className="text-2xl font-black text-white">تعديل المنتج</h3>
                     </div>
                     <div className="space-y-4">
+
+                      {/* القسم */}
                       <div className="flex flex-col gap-2">
-                        <label className="text-[10px] uppercase tracking-widest text-white/40 font-black mr-2">الفئة</label>
-                        <select
-                          className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white outline-none focus:border-gold/50 transition-all font-bold appearance-none cursor-pointer"
-                          value={editItemValues.selectedCategory}
-                          onChange={(e) =>
-                            setEditItemValues({
-                              ...editItemValues,
-                              selectedCategory: e.target.value,
-                            })
-                          }
-                        >
-                          {Object.keys(categories).map((id) => (
-                            <option key={id} value={id} className="bg-luxury-black text-white">
-                              {categories[id].name}
-                            </option>
-                          ))}
-                        </select>
+                        <label className="text-[10px] uppercase tracking-widest text-white/40 font-black mr-2">القسم</label>
+                        {(() => {
+                          const [selectedCategory, setSelectedCategory] = useState(editItemValues.selectedCategory || "");
+                          const [selectedCategoryError, setSelectedCategoryError] = useState(false);
+
+                          return (
+                            <CustomSelect
+                              options={Object.keys(categories).map(id => ({ id, name: categories[id].name }))}
+                              value={selectedCategory}
+                              onChange={(val) => {
+                                setSelectedCategory(val);
+                                setSelectedCategoryError(false);
+                                setEditItemValues({ ...editItemValues, selectedCategory: val });
+                              }}
+                              error={selectedCategoryError}
+                              placeholder="اختر الفئة"
+                            />
+                          );
+                        })()}
                       </div>
+
+                      {/* اسم المنتج */}
                       <div className="flex flex-col gap-2">
                         <label className="text-[10px] uppercase tracking-widest text-white/40 font-black mr-2">اسم المنتج</label>
                         <input
@@ -221,10 +228,12 @@ const Popup: React.FC<Props> = ({
                           }
                         />
                       </div>
+
+                      {/* الوصف */}
                       <div className="flex flex-col gap-2">
                         <label className="text-[10px] uppercase tracking-widest text-white/40 font-black mr-2">الوصف</label>
                         <input
-                          className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white outline-none focus:border-gold/50 transition-all font-bold placeholder:text-white/10"
+                          className="w-full text-xs bg-white/5 border border-white/10 rounded-2xl p-4 text-white outline-none focus:border-gold/50 transition-all font-bold placeholder:text-white/10"
                           placeholder="المكونات أو الوصف..."
                           value={editItemValues.itemIngredients}
                           onChange={(e) =>
@@ -235,6 +244,8 @@ const Popup: React.FC<Props> = ({
                           }
                         />
                       </div>
+
+                      {/* الأسعار */}
                       <div className="flex flex-col gap-2">
                         <label className="text-[10px] uppercase tracking-widest text-white/40 font-black mr-2">الأسعار</label>
                         <input
@@ -249,6 +260,8 @@ const Popup: React.FC<Props> = ({
                           }
                         />
                       </div>
+
+                      {/* أزرار الحفظ والإلغاء */}
                       <div className="flex flex-col gap-3 pt-4">
                         <button
                           onClick={updateItem}

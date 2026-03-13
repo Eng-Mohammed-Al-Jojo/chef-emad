@@ -3,9 +3,11 @@ import { ref, push, update } from "firebase/database";
 import { db } from "../../firebase";
 import { FiEdit, FiTrash2, FiSearch, FiPackage, FiPlus, FiImage, FiChevronDown, FiStar } from "react-icons/fi";
 import { FaStar } from "react-icons/fa";
+import { motion, AnimatePresence } from "framer-motion";
 import type { PopupState, Category, Item } from "./types";
 import FeaturedGallery from "./FeaturedGallery";
 import CustomSelect from "./CustomSelect";
+import { useToast } from "./ToastProvider";
 
 
 /* ================== auto load feature images from public/featured ================== */
@@ -17,7 +19,6 @@ const galleryImages = Object.keys(
 interface Props {
   categories: Record<string, Category>;
   items: Record<string, Item>;
-  popup: PopupState;
   setPopup: (popup: PopupState) => void;
 }
 
@@ -32,7 +33,7 @@ const ItemSection: React.FC<Props> = ({ categories, items, setPopup }) => {
   const [selectedCategoryError, setSelectedCategoryError] = useState(false);
   const [itemNameError, setItemNameError] = useState(false);
   const [itemPriceError, setItemPriceError] = useState(false);
-  const [, setShowToast] = useState(false);
+  const { showToast } = useToast();
 
   // ================== Gallery state ==================
   const [showGallery, setShowGallery] = useState(false);
@@ -80,8 +81,7 @@ const ItemSection: React.FC<Props> = ({ categories, items, setPopup }) => {
     setItemImage("");
 
     // Show toast
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), 1500);
+    showToast("تم إضافة المنتج بنجاح", "success");
   };
 
   const toggleItem = async (id: string, visible: boolean) => {
@@ -114,6 +114,8 @@ const ItemSection: React.FC<Props> = ({ categories, items, setPopup }) => {
   };
 
   return (
+
+
     <div className="glass-morphic p-5 md:p-6 rounded-3xl border border-white/5 relative bg-luxury-black/20">
       <div className="flex items-center gap-3 mb-6">
         <div className="w-10 h-10 rounded-xl bg-gold/10 flex items-center justify-center text-gold border border-gold/20">
@@ -275,124 +277,146 @@ const ItemSection: React.FC<Props> = ({ categories, items, setPopup }) => {
                 </div>
               </div>
 
-              <div className={`overflow-hidden transition-all duration-500 ease-in-out ${isExpanded ? "max-h-[5000px] opacity-100" : "max-h-0 opacity-0"}`}>
-                <div className="p-4 md:p-6 space-y-4">
-                  {catItems.map(item => (
-                    <div
-                      key={item.id}
-                      className={`flex flex-col lg:flex-row justify-between items-start lg:items-center p-4 rounded-2xl border border-white/5 bg-white/2 group transition-all duration-300 hover:bg-white/5 hover:border-gold/20
-                        ${!item.visible ? "opacity-40" : ""}`}
-                    >
-                      <div className="flex-1 min-w-0 flex items-center gap-5 w-full lg:w-auto">
-                        <div className="relative group/thumb shrink-0">
-                          {item.image ? (
-                            <>
-                              <img
-                                src={`/images/${item.image}`}
-                                alt={item.name}
-                                className="w-12 h-12 object-cover bg-luxury-black border border-white/10 rounded-xl group-hover:scale-105 transition-transform duration-500 cursor-pointer"
-                                onError={(e) => {
-                                  e.currentTarget.src = "/images/placeholder.png";
-                                }}
-                                onClick={() => openGallery(item.id, item.image)}
-                              />
-                              <button
-                                onClick={() => removeImage(item.id)}
-                                className="absolute -top-2 -right-2 w-6 h-6 flex justify-center items-center bg-red-500 text-white rounded-full hover:bg-red-600 transition-all text-xs opacity-0 group-hover/thumb:opacity-100 scale-50 group-hover/thumb:scale-100 z-10"
-                              >
-                                ×
-                              </button>
-                            </>
-                          ) : (
-                            <button
-                              onClick={() => openGallery(item.id)}
-                              className="w-12 h-12 flex flex-col justify-center items-center rounded-xl bg-white/5 border border-dashed border-white/20 text-white/20 hover:text-gold hover:border-gold/40 hover:bg-gold/5 transition-all duration-300"
-                            >
-                              <FiImage size={20} />
-                              <span className="text-[7px] mt-1 font-black uppercase tracking-widest">إضافة</span>
-                            </button>
-                          )}
-                        </div>
-
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <p className="text-base font-black text-white truncate">{item.name}</p>
-                            {item.star && (
-                              <div className="px-2 py-0.5 rounded-lg bg-gold/10 text-gold border border-gold/20 text-[7px] font-black uppercase tracking-widest flex items-center gap-1">
-                                <FaStar size={7} /> مميز
-                              </div>
-                            )}
-                          </div>
-                          {item.ingredients && (
-                            <p className="text-white/40 text-sm truncate mt-1 italic font-medium">{item.ingredients}</p>
-                          )}
-                          <div className="flex gap-2 mt-2 flex-wrap">
-                            {item.price.split(",").map((p, i) => (
-                              <span key={i} className="px-3 py-1 rounded-xl bg-white/5 border border-white/10 text-gold text-xs font-black">
-                                {p.trim()} ₪
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2.5 mt-4 lg:mt-0 w-full lg:w-auto overflow-x-auto pb-1 lg:pb-0 scrollbar-none">
-                        <button
-                          onClick={() => toggleItem(item.id, item.visible)}
-                          className={`min-w-[90px] px-4 py-2 rounded-xl font-black text-[9px] uppercase tracking-widest transition-all duration-300 border
-                            ${item.visible
-                              ? "bg-green-500/10 text-green-500 border-green-500/20 hover:bg-green-500/20"
-                              : "bg-white/5 text-white/40 border-white/10 hover:bg-white/10"}`}
+              <AnimatePresence initial={false}>
+                {isExpanded && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                    className="overflow-hidden"
+                  >
+                    <div className="p-4 md:p-6 space-y-4">
+                      {catItems.map(item => (
+                        <div
+                          key={item.id}
+                          className={`flex flex-col lg:flex-row justify-between items-start lg:items-center p-4 rounded-2xl border border-white/5 bg-white/2 group transition-all duration-300 hover:bg-white/5 hover:border-gold/20
+                            ${!item.visible ? "opacity-40" : ""}`}
                         >
-                          {item.visible ? "نشط حالياً" : "غير مفعل"}
-                        </button>
+                          <div className="flex-1 min-w-0 flex items-center gap-5 w-full lg:w-auto">
+                            <div className="relative group/thumb shrink-0">
+                              {item.image ? (
+                                <>
+                                  <img
+                                    src={`/images/${item.image}`}
+                                    alt={item.name}
+                                    className="w-12 h-12 object-cover bg-luxury-black border border-white/10 rounded-xl group-hover:scale-105 transition-transform duration-500 cursor-pointer"
+                                    onError={(e) => {
+                                      e.currentTarget.src = "/images/placeholder.png";
+                                    }}
+                                    onClick={() => openGallery(item.id, item.image)}
+                                  />
+                                  <button
+                                    onClick={() => removeImage(item.id)}
+                                    className="absolute -top-2 -right-2 w-6 h-6 flex justify-center items-center bg-red-500 text-white rounded-full hover:bg-red-600 transition-all text-xs opacity-0 group-hover/thumb:opacity-100 scale-50 group-hover/thumb:scale-100 z-10"
+                                  >
+                                    ×
+                                  </button>
+                                </>
+                              ) : (
+                                <button
+                                  onClick={() => openGallery(item.id)}
+                                  className="w-12 h-12 flex flex-col justify-center items-center rounded-xl bg-white/5 border border-dashed border-white/20 text-white/20 hover:text-gold hover:border-gold/40 hover:bg-gold/5 transition-all duration-300"
+                                >
+                                  <FiImage size={20} />
+                                  <span className="text-[7px] mt-1 font-black uppercase tracking-widest">إضافة</span>
+                                </button>
+                              )}
+                            </div>
 
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => setPopup({ type: "editItem", id: item.id })}
-                            className="w-9 h-9 flex justify-center items-center bg-white/5 border border-white/10 rounded-xl text-white/40 hover:text-gold hover:border-gold/30 hover:bg-gold/5 transition-all duration-300"
-                          >
-                            <FiEdit size={14} />
-                          </button>
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <p className="text-sm md:text-base font-black text-white truncate">{item.name}</p>
+                                {item.star && (
+                                  <div className="px-2 py-0.5 rounded-lg bg-gold/10 text-gold border border-gold/20 text-[7px] font-black uppercase tracking-widest flex items-center gap-1">
+                                    <FaStar size={7} /> مميز
+                                  </div>
+                                )}
+                              </div>
+                              {item.ingredients && (
+                                <p className="text-white/40 text-xs md:text-sm truncate mt-1 italic font-medium">{item.ingredients}</p>
+                              )}
+                              <div className="flex gap-2 mt-2 flex-wrap">
+                                {item.price.split(",").map((p, i) => (
+                                  <span key={i} className="px-3 py-1 rounded-xl bg-white/5 border border-white/10 text-gold text-xs font-black">
+                                    {p.trim()} ₪
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
 
-                          <button
-                            onClick={() => setPopup({ type: "deleteItem", id: item.id })}
-                            className="w-9 h-9 flex justify-center items-center bg-white/5 border border-white/10 rounded-xl text-white/40 hover:text-red-500 hover:border-red-500/30 hover:bg-red-500/5 transition-all duration-300"
-                          >
-                            <FiTrash2 size={14} />
-                          </button>
+                          <div className="flex items-center gap-2.5 mt-4 lg:mt-0 w-full lg:w-auto overflow-x-auto pb-1 lg:pb-0 scrollbar-none">
+                            <button
+                              onClick={() => toggleItem(item.id, item.visible)}
+                              className={`min-w-[90px] px-4 py-2 rounded-xl font-black text-[9px] uppercase tracking-widest transition-all duration-300 border
+                                ${item.visible
+                                  ? "bg-green-500/10 text-green-500 border-green-500/20 hover:bg-green-500/20"
+                                  : "bg-white/5 text-white/40 border-white/10 hover:bg-white/10"}`}
+                            >
+                              {item.visible ? "نشط حالياً" : "غير مفعل"}
+                            </button>
 
-                          <button
-                            onClick={async () => {
-                              if (!item.visible) return;
-                              const newStar = !localItems[item.id].star;
-                              await update(ref(db, `items/${item.id}`), { star: newStar });
-                              setLocalItems(prev => ({
-                                ...prev,
-                                [item.id]: { ...prev[item.id], star: newStar }
-                              }));
-                            }}
-                            className={`w-9 h-9 flex justify-center items-center rounded-xl transition-all duration-300 border
-                              ${!item.visible
-                                ? "text-white/10 border-white/5 cursor-not-allowed"
-                                : localItems[item.id].star
-                                  ? "bg-gold/10 text-gold border-gold/40"
-                                  : "bg-white/5 text-white/40 border-white/10 hover:text-gold hover:border-gold/30"}`}
-                          >
-                            <FiStar size={18} className={localItems[item.id].star ? "fill-gold" : ""} />
-                          </button>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => {
+                                  const itemData = localItems[item.id];
+                                  setPopup({
+                                    type: "editItem",
+                                    id: item.id,
+                                    editItemValues: {
+                                      itemName: itemData.name,
+                                      itemPrice: itemData.price,
+                                      selectedCategory: itemData.categoryId,
+                                      itemIngredients: itemData.ingredients || "",
+                                    }
+                                  });
+                                }}
+                                className="w-9 h-9 flex justify-center items-center bg-white/5 border border-white/10 rounded-xl text-white/40 hover:text-gold hover:border-gold/30 hover:bg-gold/5 transition-all duration-300"
+                              >
+                                <FiEdit size={14} />
+                              </button>
+
+                              <button
+                                onClick={() => setPopup({ type: "deleteItem", id: item.id })}
+                                className="w-9 h-9 flex justify-center items-center bg-white/5 border border-white/10 rounded-xl text-white/40 hover:text-red-500 hover:border-red-500/30 hover:bg-red-500/5 transition-all duration-300"
+                              >
+                                <FiTrash2 size={14} />
+                              </button>
+
+                              <button
+                                onClick={async () => {
+                                  if (!item.visible) return;
+                                  const newStar = !localItems[item.id].star;
+                                  await update(ref(db, `items/${item.id}`), { star: newStar });
+                                  setLocalItems(prev => ({
+                                    ...prev,
+                                    [item.id]: { ...prev[item.id], star: newStar }
+                                  }));
+                                }}
+                                className={`w-9 h-9 flex justify-center items-center rounded-xl transition-all duration-300 border
+                                  ${!item.visible
+                                    ? "text-white/10 border-white/5 cursor-not-allowed"
+                                    : localItems[item.id].star
+                                      ? "bg-gold/10 text-gold border-gold/40"
+                                      : "bg-white/5 text-white/40 border-white/10 hover:text-gold hover:border-gold/30"}`}
+                              >
+                                <FiStar size={18} className={localItems[item.id].star ? "fill-gold" : ""} />
+                              </button>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                  ))}
+                      ))}
 
-                  {catItems.length === 0 && (
-                    <div className="text-center py-10 text-white/20 font-bold border-2 border-dashed border-white/5 rounded-3xl">
-                      لا يوجد منتجات في هذه الفئة
+                      {catItems.length === 0 && (
+                        <div className="text-center py-10 text-white/20 font-bold border-2 border-dashed border-white/5 rounded-3xl">
+                          لا يوجد منتجات في هذه الفئة
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-              </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           );
         })}

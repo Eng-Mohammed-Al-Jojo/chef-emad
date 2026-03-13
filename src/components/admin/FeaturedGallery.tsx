@@ -27,7 +27,7 @@ const FeaturedGallery: React.FC<Props> = ({ visible, onClose, onSelect, galleryI
                     />
 
                     {/* Content Wrapper */}
-                    <div className="fixed inset-0 z-10000 flex items-start justify-center p-4 pt-16 md:pt-24 overflow-y-auto scrollbar-none pointer-events-none">
+                    <div className="fixed inset-0 z-10000 flex items-start justify-center p-4 pt-16 md:pt-24 overflow-y-auto scrollbar-none pointer-events-none" dir="rtl">
                         <motion.div
                             initial={{ opacity: 0, scale: 0.9, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -41,7 +41,6 @@ const FeaturedGallery: React.FC<Props> = ({ visible, onClose, onSelect, galleryI
                             <div className="flex items-center justify-between mb-8 relative z-10">
                                 <div>
                                     <h3 className="text-xl font-black text-white">اختر صورة للصنف</h3>
-                                    <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest mt-1">Select Product Image</p>
                                 </div>
                                 <button
                                     onClick={onClose}

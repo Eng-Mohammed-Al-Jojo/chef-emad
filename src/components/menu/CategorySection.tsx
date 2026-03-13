@@ -17,7 +17,7 @@ export default function CategorySection({ category, items, orderSystem }: Props)
           initial={{ opacity: 0, x: 20 }}
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
+          transition={{ duration: 1.5, ease: "easeOut" }}
           className="flex flex-col items-start gap-2"
         >
           <div className="flex items-center gap-3">

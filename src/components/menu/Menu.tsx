@@ -281,8 +281,8 @@ export default function Menu({ onLoadingChange, onFeaturedCheck }: Props) {
               >
                 <motion.div
                   className="absolute inset-0 bg-gold"
-                  animate={{ left: ["-100%", "100%"] }}
-                  transition={{ duration: 1.5, delay: i * 0.2, repeat: Infinity, ease: "easeInOut" }}
+                  animate={{ right: ["-100%", "100%"] }}
+                  transition={{ duration: 2, delay: i * 0.2, repeat: Infinity, ease: "linear" }}
                 />
               </motion.div>
             ))}
@@ -315,7 +315,7 @@ export default function Menu({ onLoadingChange, onFeaturedCheck }: Props) {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className={`fixed top-8 left-1/2 -translate-x-1/2 px-6 py-3 rounded-2xl font-bold shadow-2xl z-50 text-luxury-black
+            className={`fixed top-8 left-1/3 -translate-x-1/2 px-6 py-3 rounded-2xl font-bold shadow-2xl z-50 text-luxury-black
             ${toast.color === "green" ? "bg-gold" : "bg-gold/90"}`}
           >
             {toast.message}
